@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vectos - Teevy: Building a REST/JSON backend with Haskell and Postgres</title>
+    <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/flexslider.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/queries.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+    <link href="../css/animate.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+      </head>
+      <body id="top">
+
+        <header class="blog-header">
+  <section>
+    <div class="container text-center">
+      <div class="row animated fadeInDown delay-01s">
+        <a href="../" alt="Back to the homepage"><img src="../img/logo.png" /></a>
+      </div>
+    </div>
+  </section>
+</header>
+
+<section class="animated fadeInUp delay-05s blog-post">
+
+  <div class="col-md-10 col-md-offset-1">
+    <h1 class="arrow">Teevy: Building a REST/JSON backend with Haskell and Postgres</h1>
+    <div class="info">May 31, 2016</div>
+
+    <h1 id="building-a-restjson-webservice-using-a-pure-functional-programming-language">Building a REST/JSON webservice using a pure functional programming language</h1>
+<p>Two years ago I joined a few friends which were doing a little hobby project. Creating a website which allowed you to track your watch progression of your favorite television series. The project was called teevy.co and is still online, but some of it might function akward (no maintance done to it lately).</p>
+<div class="figure">
+<img src="../img/teevy_webapp.png" alt="alt text" />
+<p class="caption">alt text</p>
+</div>
+<p>The goal was to develop a MVP (Minimal Viable Product) first. We had no real business model planned out. We are just passionate about what we do and this was just a hobby project for us to try new things.</p>
+<p>In the new few minutes I want to tell you about my journey creating a REST/JSON backend for teevy.co with a pure functional programming language called Haskell.</p>
+<h2 id="haskell-a-pure-functional-programming-language">Haskell, a pure functional programming language</h2>
+<p>Haskell you say? Yes, Haskell. Why Haskell for a MVP ? I didn’t know that much Haskell at that time. I read some books about and I just wanted to give it a go and <em>learn</em>. So what are some nice properties of functional programming and Haskell?</p>
+<h3 id="types">Types</h3>
+<p>Types are a important recipe for Haskell and functional programming. They allow us to exactly capture what a function should accept as input and will give as output. They also describe how data structures look like.</p>
+<p>Types can assure you you are using the right shapes. This is in fact some sort of test. In fact some languages alleviate the need for alot tests by using really expressive types (for example: Vectors and Matrices which have their dimensions included in the type). Also typing makes refactoring a lot easier, since the compiler will tell you when you are using the wrong shape.</p>
+<p>Opposed to dynamic languages which will let you know that you’ve made an ‘oopsie’ at runtime. To cover that, usually a lot of tests are written (which also need to be refactored after a refactor) to avoid such oopsies.</p>
+<h3 id="side-effects">Side effects</h3>
+<p>In a pure functional programming all (side) effects are captured and are handled explicitly. Examples of effects are optional values (Option/Maybe), asynchronous values (IO/Future/Task), disjunction values (Either), concurrent values (STM), modification of values, etc.</p>
+<p>The advantage is that you will handle all effects explicitly and therefore this reduces the risk of having a bug in your program. A well known problem with a C# and Java program is having the null pointer exception at runtime in your program. In that case the program references to a unset reference in memory, causing the program to terminate. This might be oke if you have set up a exception handler, but mapping this error to a good human readable error requires you rethrow exceptions and write lots of boilerplate. And what if you have two or more potential null cases in your program? Yes, it will be a mess. Also these functions which do not handle these side effects explicitly do not compose.</p>
+<p>What do I mean by this? Programs <strong>without</strong> explicit side effects can do things in between which might not give the same outcome every time. A pure expression like <code>1 + 1</code> will output <code>2</code> every time. In other words create programs which are a bunch of expressions instead of a bunch of statements. Expressions compose!</p>
+<h3 id="type-classes">Type classes</h3>
+<p>A type class is a common structure, like a interface. But it is ad-hoc (that’s why we call it a type class instance) and can abstract over high-kinded types (<code>Maybe a</code> is a higher kinded type, it takes one type parameter to create a fully constructed type).</p>
+<p>The most well known type classes in Haskell and functional programming are: Functor, Monoid, Monad, Applicative, etc.</p>
+<p>For example we can have a Functor (which offers a map function) instance for a optional value, asynchronous value, etc.</p>
+<h3 id="composition-composition-and-composition">Composition, composition and composition</h3>
+<p>Every where you look in functional programming, you will see <strong>composition</strong>. Functions compose, functors compose, applicatives compose, lenses compose, etc. When you dig deeper you’ll see it everywhere. In the end, when we are programming we decompose problems in small parts and compose them together to form a program. That’s the power of functional programming, solving little problems and compose them in larger programs.</p>
+<h3 id="the-ecosystem">The ecosystem</h3>
+<p>Almost all libraries written in Haskell can be found on hackage (http://hackage.haskell.org/). Ranging from database drivers, web servers, parser libaries to numerical computing. Also the documentation of almost each library is very easy to comprehend. Some libraries I’ve used for teevy.co are:</p>
+<ul>
+<li>Aeson: JSON encoding/decoding</li>
+<li>Postgresql-simple: Database access</li>
+<li>Scotty: Sinatra-like web framework</li>
+<li>JWT: Json Web Tokens for authentication</li>
+</ul>
+<p>You can use cabal to install these packages, which I did back then. Nowadays you would use something like stack to manage your build (which uses cabal underneath).</p>
+<h2 id="creating-a-webservice">Creating a webservice</h2>
+<p>So what do we need to build a <em>simple</em> webservice?</p>
+<ul>
+<li>Webserver</li>
+<li>JSON encoding/decoding</li>
+<li>Database access</li>
+</ul>
+<p>Let’s start with the data part.</p>
+<h3 id="dealing-with-data">Dealing with data</h3>
+<p>To create a webservice for such a thing you need to define data types and create type class instances which can:</p>
+<ul>
+<li>Encode/decode to JSON</li>
+<li>Persist these types to database</li>
+<li>Load data from the database</li>
+</ul>
+<h4 id="our-data">Our data</h4>
+<p>Let’s pretend we are dealing with a user, just to keep things simple. Here’s the definition of the user data record.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">User</span> <span class="fu">=</span> <span class="dt">User</span> {<span class="ot"> name ::</span> <span class="dt">String</span>,<span class="ot"> fileQuota ::</span> <span class="dt">Int</span> }</code></pre></div>
+<h4 id="json">JSON</h4>
+<p>I’ve used the <a href="https://hackage.haskell.org/package/aeson">aeson</a> library to work with JSON. An example of a JSON decoder typeclass instance for a user looks like this (if you write it out by hand).</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">User</span> <span class="kw">where</span>
+    parseJSON (<span class="dt">Object</span> v) <span class="fu">=</span> <span class="dt">User</span> <span class="fu">&lt;$&gt;</span>
+                           v <span class="fu">.:</span> <span class="st">&quot;name&quot;</span> <span class="fu">&lt;*&gt;</span>
+                           v <span class="fu">.:</span> <span class="st">&quot;fileQuota&quot;</span>
+    <span class="co">-- A non-Object value is of the wrong type, so fail.</span>
+    parseJSON _          <span class="fu">=</span> empty</code></pre></div>
+<p>The symbols <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code> are just functions. I won’t go much into detail, but these functions are related to Functor and Applicative. Aeson and Haskell can automatically derive the type class instance for the type <code>User</code>. Removing the need to write this boilerplate.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">User</span></code></pre></div>
+<p>Finally we can use a <code>decode</code> function defined as <code>decode :: FromJSON a =&gt; ByteString -&gt; Maybe a</code>. As you can see the generic parameter <code>a</code> requires you to have typeclass instance in scope of <code>FromJSON</code>. If so, it will take <code>ByteString</code> and converts it into a optional value <code>Maybe a</code>.</p>
+<p>This a great example of typeclasses (decoder typeclass) and explicit side-effects (returning a optional value).</p>
+<h4 id="database">Database</h4>
+<p>We can do the typeclass stuff for database access (using <a href="https://hackage.haskell.org/package/postgresql-simple">postgres-simple</a>). Like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">FromRow</span> <span class="dt">User</span> <span class="kw">where</span>
+    fromRow <span class="fu">=</span> <span class="dt">User</span> <span class="fu">&lt;$&gt;</span> field <span class="fu">&lt;*&gt;</span> field</code></pre></div>
+<p>The <code>FromRow</code> type class will extract columns from a result set and put them into a record. Order of the fields and selecting the right fields in the query is important for this matter!</p>
+<p>By supplying a instance of <code>FromRow</code> for the type <code>User</code> we can use it with <code>query_ :: FromRow r =&gt; Connection -&gt; Query -&gt; IO [r]</code>. As you can see it requires a <code>FromRow</code> type class instance again for <code>r</code>. If that’s settled, we can supply a <code>Connection</code> and <code>Query</code>. It will give us back a <code>IO [r]</code> which is a asynchronous list of <code>r</code> values.</p>
+<p>Using this we can query the database. Like so:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">allUsers ::</span> <span class="dt">Connection</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">User</span>]
+allUsers conn <span class="fu">=</span> query_ conn <span class="st">&quot;select * from user&quot;</span></code></pre></div>
+<p>Passing the connection each time is not convenient and people coming from OOP languages might say, you should use dependency injection! I’ll come back to this later.</p>
+<h3 id="scotty">Scotty</h3>
+<p>To serve web pages we need framework which can do so. <a href="https://hackage.haskell.org/package/scotty">Scotty</a> is a Haskell web framework inspired by Ruby’s Sinatra, using WAI and Warp. A small example from their website:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">import </span><span class="dt">Web.Scotty</span>
+
+<span class="kw">import </span><span class="dt">Data.Monoid</span> (mconcat)
+
+main <span class="fu">=</span> scotty <span class="dv">3000</span> <span class="fu">$</span> <span class="kw">do</span>
+  get <span class="st">&quot;/:word&quot;</span> <span class="fu">$</span> <span class="kw">do</span>
+    beam <span class="ot">&lt;-</span> param <span class="st">&quot;word&quot;</span>
+    html <span class="fu">$</span> mconcat [<span class="st">&quot;&lt;h1&gt;Scotty, &quot;</span>, beam, <span class="st">&quot; me up!&lt;/h1&gt;&quot;</span>]</code></pre></div>
+<p>This will host a scotty server at port 3000. When you enter <code>localhost:3000/mark</code> it will print you <code>&quot;&lt;h1&gt;Scotty, mark me up!&lt;/h1&gt;&quot;</code></p>
+<p>Quite simple huh? (except the monoid stuff if you haven’t seen it, but its just concat stuff really (with some laws)).</p>
+<p>We can also using <code>json :: ToJSON a =&gt; a -&gt; ActionM ()</code> instead of <code>html</code>. As you can see we need to have <code>ToJSON</code> (encoder) type class instance in scope which is the opposite of <code>FromJSON</code> (decoder). I won’t go into detail, but you can make a instance by using <code>instance ToJSON User</code>.</p>
+<h3 id="config-parsing">Config parsing</h3>
+<p>Every website nowdays has some configuration file which contains database connection strings, facebook secrets, settings, etc. Haskell has a nice library to work with config files called: <a href="https://hackage.haskell.org/package/configurator">configurator</a></p>
+<p>In the example below we load the properties using the configurator library:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">TvConfig</span> <span class="fu">=</span> <span class="dt">TvConfig</span> {
+<span class="ot">        teevyConnectInfo ::</span> <span class="dt">ConnectInfo</span>
+    ,<span class="ot">   teevyPort ::</span> <span class="dt">Int</span>
+    ,<span class="ot">   teevySecret ::</span> <span class="dt">T.Text</span>
+    ,<span class="ot">   tmdbApiKey ::</span> <span class="dt">TL.Text</span>
+    ,<span class="ot">   facebookSecret ::</span> <span class="dt">B.ByteString</span>
+} <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Eq</span>)
+
+<span class="ot">processDatabaseInfo ::</span> <span class="dt">Config</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">ConnectInfo</span>)
+processDatabaseInfo cfg <span class="fu">=</span> <span class="kw">do</span>
+  host <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;db.host&quot;</span>
+  port <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;db.port&quot;</span>
+  db <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;db.db&quot;</span>
+  user <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;db.user&quot;</span>
+  pass <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;db.pass&quot;</span>
+  return (<span class="dt">ConnectInfo</span> <span class="fu">&lt;$&gt;</span> host <span class="fu">&lt;*&gt;</span> port <span class="fu">&lt;*&gt;</span> user <span class="fu">&lt;*&gt;</span> pass <span class="fu">&lt;*&gt;</span> db)
+
+<span class="ot">processConfig ::</span> <span class="dt">Config</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">TvConfig</span>)
+processConfig cfg <span class="fu">=</span> <span class="kw">do</span>
+  db <span class="ot">&lt;-</span> processDatabaseInfo cfg
+  port <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;teevy.port&quot;</span>
+  secret <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;teevy.secret&quot;</span>
+  tmdbKey <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;tmdb.key&quot;</span>
+  fbSecret <span class="ot">&lt;-</span> lookup cfg <span class="st">&quot;facebook.secret&quot;</span>
+  return (<span class="dt">TvConfig</span> <span class="fu">&lt;$&gt;</span> db <span class="fu">&lt;*&gt;</span> port <span class="fu">&lt;*&gt;</span> secret <span class="fu">&lt;*&gt;</span> tmdbKey <span class="fu">&lt;*&gt;</span> fbSecret)
+
+<span class="ot">loadConfig ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">TvConfig</span>)
+loadConfig path <span class="fu">=</span> <span class="kw">do</span>
+  exists <span class="ot">&lt;-</span> doesFileExist path
+  <span class="kw">if</span> exists
+  <span class="kw">then</span> withLoad [<span class="dt">Required</span> path] processConfig
+  <span class="kw">else</span> return <span class="dt">Nothing</span></code></pre></div>
+<p>The takeaways here once again: simple functions, declarative parsing of the different sections and taking failure into account.</p>
+<h3 id="monad-transformers">Monad transformers</h3>
+<p>Remember our little function <code>allUsers</code> which required you to pass in a <code>Connection</code>. This is not really convenient.</p>
+<p>To solve this I used monad transformers. Back in the days I was not familiar with free monads yet, that would be another direction to look at. Back to it, I created a construct called <code>TvQuery</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">TvQuery</span> r <span class="fu">=</span> <span class="dt">TvQuery</span> {<span class="ot"> runQuery ::</span> <span class="dt">ReaderT</span> <span class="dt">Connection</span> <span class="dt">IO</span> r }
+                    <span class="kw">deriving</span> (<span class="dt">Functor</span>, <span class="dt">Monad</span>, <span class="dt">MonadIO</span>, <span class="dt">MonadReader</span> <span class="dt">Connection</span>)
+
+<span class="ot">queryMany ::</span> (<span class="dt">ToRow</span> q, <span class="dt">FromRow</span> r) <span class="ot">=&gt;</span> <span class="dt">Query</span> <span class="ot">-&gt;</span> q <span class="ot">-&gt;</span> <span class="dt">TvQuery</span> [r]
+queryMany qs p <span class="fu">=</span> <span class="kw">do</span>
+	conn <span class="ot">&lt;-</span> ask
+	res <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> query conn qs p
+	return res        </code></pre></div>
+<p>The reader monad allows you to <code>ask</code> a given context. In this case it’s a <code>Connection</code>. It’s underlying effect is <code>IO</code>, but can be any monad. This allows you combine multiple <code>TvQuery</code> statements like so:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">allUsers ::</span> <span class="dt">TvQuery</span> [<span class="dt">User</span>]
+allUsers <span class="fu">=</span> queryMany <span class="st">&quot;select * from users&quot;</span> ()
+
+<span class="ot">allBlogs ::</span> <span class="dt">TvQuery</span> [<span class="dt">BlogPost</span>]
+allBlogs <span class="fu">=</span> queryMany <span class="st">&quot;select * from blogs&quot;</span> ()
+
+<span class="ot">someFunc ::</span> <span class="dt">TvQuery</span> ([<span class="dt">User</span>], [<span class="dt">BlogPost</span>])
+someFunc <span class="fu">=</span> <span class="kw">do</span>
+  users <span class="ot">&lt;-</span> allUsers
+  blogs <span class="ot">&lt;-</span> allBlogs
+  return (users, blogs)</code></pre></div>
+<p>Running this can be achieved by using <code>runReaderT</code> like: <code>runReaderT someFunc conn</code>. It will execute <code>someFunc</code> using the supplied <code>conn :: Connection</code>. However this does not support transactions, which might be need for some queries.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>It’s been two years ago since I’ve built Teevy. During these past two years I’ve learned a lot and some stuff can be greatly simplified or improved. Looking back at it, I am quite satisfied with what I have achieved. I learned a tremendous amount and I’ve created a nice MVP :)</p>
+<p>It also proves that you can write REST backends with Haskell. Many other people have done it and they also like the advantages of it. Some complementary work can be found at:</p>
+<ul>
+<li><a href="http://adit.io/posts/2013-04-15-making-a-website-with-haskell.html">Making a website in Haskell</a></li>
+<li><a href="http://taylor.fausak.me/2014/10/21/building-a-json-rest-api-in-haskell/">Building a JSON REST API in Haskell</a></li>
+<li><a href="http://engineering.silk.co/">Engineering Silk</a></li>
+<li><a href="https://ocharles.org.uk/blog/posts/2013-12-05-24-days-of-hackage-scotty.html">21 days of Hackage: scotty</a></li>
+<li><a href="https://ocharles.org.uk/blog/posts/2012-12-03-postgresql-simple.html">21 days of Hackage: postgres-simple</a></li>
+<li><a href="https://ocharles.org.uk/blog/posts/2012-12-07-24-days-of-hackage-aeson.html">21 days of Hackage: aeson</a></li>
+<li><a href="https://ocharles.org.uk/blog/posts/2012-12-20-24-days-of-hackage-transformers.html">21 days of Hackage: transformers</a></li>
+<li><a href="https://ocharles.org.uk/blog/posts/2012-12-21-24-days-of-hackage-configurator.html">21 days of Hackage: configurator</a></li>
+</ul>
+<h2 id="learning-haskell">Learning Haskell</h2>
+<p>To learn Haskell, there are a few options. Like I have learned a lot from reading: <a href="http://learnyouahaskell.com/">Learn you a Haskell for a Great Good</a>, but it seems <a href="http://haskellbook.com/">Haskell programming</a> seems to gain a lot of popularity lately.</p>
+
+  </div>
+
+</section>
+
+<section class="section-padding">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 text-center">
+      <a href="../" class="learn-more-btn">Back to the homepage</a>
+    </div>
+  </div>
+</section>
+
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="../js/waypoints.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/scripts.js"></script>
+        <script src="../js/jquery.flexslider.js"></script>
+        <script src="../js/modernizr.js"></script>
+      </body>
+    </html>
