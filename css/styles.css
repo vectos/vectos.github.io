@@ -408,8 +408,13 @@ SOCIAL ICON
 	text-align: center;
 }
 
-.blog-post img {
-	max-width: 100%;
+.blog-post .figure {
+	text-align: center;
+}
+
+.blog-post .caption {
+	font-size: 12px;
+	color: #aaa;
 }
 
 .blog-post h1 {
