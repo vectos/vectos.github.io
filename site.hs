@@ -21,8 +21,20 @@ main = hakyll $ do
 
     match "posts/*" $ do
         route $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/post.html"    postCtx
+        compile $
+          pandocCompiler
+            >>= loadAndApplyTemplate "templates/post.html"    (postCtx)
+            >>= loadAndApplyTemplate "templates/default.html" postCtx
+            >>= relativizeUrls
+
+    match "portfolio/*" $ do
+        route $ setExtension "html"
+        compile $ do
+          posts <- recentFirst =<< loadAll "posts/*"
+          let indexCtx = listField "posts" postCtx (return posts) `mappend` defaultContext
+
+          pandocCompiler
+            >>= loadAndApplyTemplate "templates/portfolio-item.html" (postCtx `mappend` indexCtx)
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
 
@@ -30,8 +42,10 @@ main = hakyll $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
+            portfolio <- loadAll "portfolio/*"
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
+                    listField "portfolio" postCtx (return portfolio) `mappend`
                     constField "title" "Home"                `mappend`
                     defaultContext
 
