@@ -126,7 +126,7 @@ main <span class="fu">=</span> scotty <span class="dv">3000</span> <span class="
     html <span class="fu">$</span> mconcat [<span class="st">&quot;&lt;h1&gt;Scotty, &quot;</span>, beam, <span class="st">&quot; me up!&lt;/h1&gt;&quot;</span>]</code></pre></div>
 <p>This will host a scotty server at port 3000. When you enter <code>localhost:3000/mark</code> it will print you <code>&quot;&lt;h1&gt;Scotty, mark me up!&lt;/h1&gt;&quot;</code></p>
 <p>Quite simple huh? (except the monoid stuff if you haven’t seen it, but its just concat stuff really (with some laws)).</p>
-<p>We can also using <code>json :: ToJSON a =&gt; a -&gt; ActionM ()</code> instead of <code>html</code>. As you can see we need to have <code>ToJSON</code> (encoder) type class instance in scope which is the opposite of <code>FromJSON</code> (decoder). I won’t go into detail, but you can make a instance by using <code>instance ToJSON User</code>.</p>
+<p>We can also using <code>json :: ToJSON a =&gt; a -&gt; ActionM ()</code> instead of <code>html</code>. As you can see we need to have a <code>ToJSON</code> (encoder) type class instance in scope which is the opposite of <code>FromJSON</code> (decoder). I won’t go into detail, but you can make a instance by using <code>instance ToJSON User</code>. For example you could write <code>json fetchedUsers</code> where <code>fetchedUsers :: [User]</code> to return a array of users.</p>
 <h3 id="config-parsing">Config parsing</h3>
 <p>Every website nowadays has some configuration file which contains database connection strings, Facebook secrets, settings, etc. Haskell has a nice library to work with config files called: <a href="https://hackage.haskell.org/package/configurator">configurator</a></p>
 <p>In the example below we load the properties using the configurator library:</p>
@@ -177,7 +177,7 @@ loadConfig path <span class="fu">=</span> <span class="kw">do</span>
 <li><a href="https://ocharles.org.uk/blog/posts/2012-12-21-24-days-of-hackage-configurator.html">21 days of Hackage: configurator</a></li>
 </ul>
 <h2 id="learning-haskell">Learning Haskell</h2>
-<p>To learn Haskell, there are a few options. Like I have learned a lot from reading: <a href="http://learnyouahaskell.com/">Learn you a Haskell for a Great Good</a>, but it seems <a href="http://haskellbook.com/">Haskell programming</a> seems to gain a lot of popularity lately.</p>
+<p>To learn Haskell, there are a few options. Like I have learned a lot from reading: <a href="http://learnyouahaskell.com/">Learn you a Haskell for a Great Good</a>, but it seems <a href="http://haskellbook.com/">Haskell programming</a> gains more popularity lately.</p>
 
   </div>
 
