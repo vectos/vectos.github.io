@@ -45,12 +45,12 @@
 <p class="caption">alt text</p>
 </div>
 <p>The goal was to develop a MVP (Minimal Viable Product) first. We had no real business model planned out. We are just passionate about what we do and this was just a hobby project for us to try new things.</p>
-<p>In the new few minutes I want to tell you about my journey creating a REST/JSON backend for teevy.co with a pure functional programming language called Haskell.</p>
+<p>In the next few minutes I want to tell you about my journey creating a REST/JSON backend for teevy.co with a pure functional programming language called Haskell.</p>
 <h2 id="haskell-a-pure-functional-programming-language">Haskell, a pure functional programming language</h2>
-<p>Haskell you say? Yes, Haskell. Why Haskell for a MVP ? I didn’t know that much Haskell at that time. I read some books about and I just wanted to give it a go and <em>learn</em>. So what are some nice properties of functional programming and Haskell?</p>
+<p>Haskell you say? Yes, Haskell. Why Haskell for a MVP ? I didn’t know that much Haskell at that time. I read some books about it, and I just wanted to give it a go and <em>learn</em> it by applying it. So what are some nice properties of functional programming and Haskell?</p>
 <h3 id="types">Types</h3>
 <p>Types are a important recipe for Haskell and functional programming. They allow us to exactly capture what a function should accept as input and will give as output. They also describe how data structures look like.</p>
-<p>Types can assure you you are using the right shapes. This is in fact some sort of test. In fact some languages alleviate the need for alot tests by using really expressive types (for example: Vectors and Matrices which have their dimensions included in the type). Also typing makes refactoring a lot easier, since the compiler will tell you when you are using the wrong shape.</p>
+<p>Types can assure you that you are using the right shapes. This is in fact some sort of test. In fact some languages remove the need for alot tests by using really expressive types (for example: Vectors and Matrices which have their dimensions included in the type). Also typing makes refactoring a lot easier, since the compiler will tell you when you are using the wrong shape.</p>
 <p>Opposed to dynamic languages which will let you know that you’ve made an ‘oopsie’ at runtime. To cover that, usually a lot of tests are written (which also need to be refactored after a refactor) to avoid such oopsies.</p>
 <h3 id="side-effects">Side effects</h3>
 <p>In a pure functional programming all (side) effects are captured and are handled explicitly. Examples of effects are optional values (Option/Maybe), asynchronous values (IO/Future/Task), disjunction values (Either), concurrent values (STM), modification of values, etc.</p>
@@ -59,15 +59,16 @@
 <h3 id="type-classes">Type classes</h3>
 <p>A type class is a common structure, like a interface. But it is ad-hoc (that’s why we call it a type class instance) and can abstract over high-kinded types (<code>Maybe a</code> is a higher kinded type, it takes one type parameter to create a fully constructed type).</p>
 <p>The most well known type classes in Haskell and functional programming are: Functor, Monoid, Monad, Applicative, etc.</p>
-<p>For example we can have a Functor (which offers a map function) instance for a optional value, asynchronous value, etc.</p>
+<p>For example we can have a Functor (which offers a map function) instance for a optional value and asynchronous values.</p>
 <h3 id="composition-composition-and-composition">Composition, composition and composition</h3>
 <p>Every where you look in functional programming, you will see <strong>composition</strong>. Functions compose, functors compose, applicatives compose, lenses compose, etc. When you dig deeper you’ll see it everywhere. In the end, when we are programming we decompose problems in small parts and compose them together to form a program. That’s the power of functional programming, solving little problems and compose them in larger programs.</p>
 <h3 id="the-ecosystem">The ecosystem</h3>
-<p>Almost all libraries written in Haskell can be found on hackage (http://hackage.haskell.org/). Ranging from database drivers, web servers, parser libaries to numerical computing. Also the documentation of almost each library is very easy to comprehend. Some libraries I’ve used for teevy.co are:</p>
+<p>Almost all libraries written in Haskell can be found on hackage (http://hackage.haskell.org/). Ranging from database drivers, web servers, parser libaries to numerical computing. Also the documentation of any library is very easy to comprehend. Some libraries I’ve used for teevy.co are:</p>
 <ul>
 <li>Aeson: JSON encoding/decoding</li>
 <li>Postgresql-simple: Database access</li>
 <li>Scotty: Sinatra-like web framework</li>
+<li>Configurator: For loading configuration</li>
 <li>JWT: Json Web Tokens for authentication</li>
 </ul>
 <p>You can use cabal to install these packages, which I did back then. Nowadays you would use something like stack to manage your build (which uses cabal underneath).</p>
@@ -77,6 +78,7 @@
 <li>Webserver</li>
 <li>JSON encoding/decoding</li>
 <li>Database access</li>
+<li>Loading a configuration file</li>
 </ul>
 <p>Let’s start with the data part.</p>
 <h3 id="dealing-with-data">Dealing with data</h3>
@@ -185,7 +187,7 @@ someFunc <span class="fu">=</span> <span class="kw">do</span>
   users <span class="ot">&lt;-</span> allUsers
   blogs <span class="ot">&lt;-</span> allBlogs
   return (users, blogs)</code></pre></div>
-<p>Running this can be achieved by using <code>runReaderT</code> like: <code>runReaderT someFunc conn</code>. It will execute <code>someFunc</code> using the supplied <code>conn :: Connection</code>. However this does not support transactions, which might be need for some queries.</p>
+<p>Running this can be achieved by using <code>runReaderT</code> like: <code>runReaderT someFunc conn</code>. It will execute <code>someFunc</code> using the supplied <code>conn :: Connection</code>. However this does not support transactions, which might be needed for some queries.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>It’s been two years ago since I’ve built Teevy. During these past two years I’ve learned a lot and some stuff can be greatly simplified or improved. Looking back at it, I am quite satisfied with what I have achieved. I learned a tremendous amount and I’ve created a nice MVP :)</p>
 <p>It also proves that you can write REST backends with Haskell. Many other people have done it and they also like the advantages of it. Some complementary work can be found at:</p>
