@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vectos - Machine Learning: what can it do for you?</title>
+    <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/flexslider.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/queries.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+    <link href="../css/animate.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+      </head>
+      <body id="top">
+
+        <header class="blog-header">
+  <section>
+    <div class="container text-center">
+      <div class="row animated fadeInDown delay-01s">
+        <a href="../" alt="Back to the homepage"><img src="../img/logo.png" /></a>
+      </div>
+    </div>
+  </section>
+</header>
+
+<section class="animated fadeInUp delay-05s blog-post">
+
+  <div class="col-md-10 col-md-offset-1">
+    <h1 class="arrow">Machine Learning: what can it do for you?</h1>
+    <div class="info">June 21, 2016</div>
+
+    <p>What is Machine Learning (ML)? It is training the computer to make it predict a value or recognize objects, speech, letters, music notes, etc. This is supervised learning, because the output label is defined.</p>
+<p>Alternatively you can also find a set of clusters for example. This could be useful for finding market segments. This is called unsupervised learning, because the output label is not defined.</p>
+<p>Training is done by using historical data. Data (called features in ML) can be multi-dimensional: for example to predict a house price based on it’s size, number of bedrooms, facilities, etc.</p>
+<p>But also a matrix of pixels can be used for instance. When we correctly trained our model we can use output matrix parameter (called theta) to apply on the input parameters to recognize a digit in a image for example.</p>
+<h2 id="supervised-machine-learning">Supervised Machine Learning</h2>
+<h3 id="predicting-a-value">Predicting a value</h3>
+<p>Based on some input parameters you could predict a value. For example this could be house price as said before. The input could be a it’s size, number of bedrooms, etc. It could also be used to predict a trend. For example if a company’s sales have increased steadily every month for the past few years, it would produce a line that that depicts the upward trend in sales. After creating the trend line, the company could use the slope of the line to forecast sales in future months.</p>
+<div class="figure">
+<img src="../img/ml/linear_regression.gif" alt="Using linear regression we could predict a value" />
+<p class="caption">Using linear regression we could predict a value</p>
+</div>
+<p>Remember that a prediction may be not true in the end, but it gives a good <em>indication</em> (if the model is correct) of what to expect. According to that you could take action, which might be a valuable thing to do.</p>
+<h3 id="classification">Classification</h3>
+<p>Classifying input data to a certain label is a powerful tool and has many applications.</p>
+<p>One of the most famous examples of classification machine learning is spam detection. Based on input data (the email body, the sender, etc) the classification algorithm could detect whether a email is spam or not.</p>
+<div class="figure">
+<img src="../img/ml/svm_guassian_kernel.png" alt="A plotted Support Vector Machine (SVM) with a non-linear Gaussian Kernel. Implementing a binary classification algorithm (green/red)" />
+<p class="caption">A plotted Support Vector Machine (SVM) with a non-linear Gaussian Kernel. Implementing a binary classification algorithm (green/red)</p>
+</div>
+<p>Another example is detecting a car’s license plate and after that scan it’s letters. This might be useful when you are developing a traffic enforcement system saving the whole traffic enforcement organization a lot time (you would remove the need of having manually enter the license plate number).</p>
+<p>There are many other applications like: detecting music notes, classifying music, speech recognition, object recognition and much more.</p>
+<h2 id="unsupervised-machine-learning">Unsupervised Machine Learning</h2>
+<h3 id="clustering">Clustering</h3>
+<p>In some cases you would like to plot segments/clusters out of data. This could be useful to find out what kind of segments your market has or to reduce the number of colors in a image. You can as well find out how segments in social networks are grouped.</p>
+<div class="figure">
+<img src="../img/ml/kmeans_diagram.gif" alt="A K-means clustering algorithm plotted" />
+<p class="caption">A K-means clustering algorithm plotted</p>
+</div>
+<p>Also a clustering algorithm is the backbone behind the search engines. Search engines try to group similar objects in one cluster and the dissimilar objects far from each other. It provides result for the searched data according to the nearest similar object which are clustered around the data to be searched.</p>
+<h3 id="anomaly-detection">Anomaly detection</h3>
+<p>A anomaly is something that deviates from what is standard, normal, or expected. What could that be in your business? In financial systems this may be fraud and in manufacturing systems this may be a defect. In software this could be a suspicious behavior in the system for example</p>
+<div class="figure">
+<img src="../img/ml/anomaly_detection.png" alt="A plotted graph with some anomalies" />
+<p class="caption">A plotted graph with some anomalies</p>
+</div>
+<p>Raising a flag or taking automated actions could be considered by if you implemented a anomaly detection algorithm successfully. Could this be useful for you?</p>
+<h2 id="some-showcases">Some showcases</h2>
+<p>Over the past period I’ve seen some interesting Machine Learning applications. Some of them:</p>
+<ul>
+<li><a href="https://github.com/satoshiiizuka/siggraph2016_colorization">Automatic Colorization of Grayscale Images</a></li>
+<li><a href="http://crockpotveggies.com/2015/02/09/automating-tinder-with-eigenfaces.html">Automating Tinder with Eigenfaces</a></li>
+<li><a href="http://blog.algorithmia.com/2016/06/improving-nudity-detection-nsfw-image-recognition/">Improving Nudity Detection and NSFW Image Recognition</a></li>
+<li><a href="https://www.lunaverus.com/cnn">Music Transcription with Convolutional Neural Networks</a></li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>As you can see Machine Learning is a interesting field. Have you thought what it can do it for you? Mark de Jong (at Vectos) recently completed a course on Machine Learning at Coursera. If you have some ideas, let’s have a coffee!</p>
+
+  </div>
+
+</section>
+
+<section class="section-padding">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 text-center">
+      <a href="../" class="learn-more-btn">Back to the homepage</a>
+    </div>
+  </div>
+</section>
+
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="../js/waypoints.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/scripts.js"></script>
+        <script src="../js/jquery.flexslider.js"></script>
+        <script src="../js/modernizr.js"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-4774165-7', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+      </body>
+    </html>
