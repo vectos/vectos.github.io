@@ -438,3 +438,8 @@ SOCIAL ICON
 	text-decoration: none;
 	border-bottom: 1px solid #ccc;
 }
+
+.author-clip {
+  -webkit-clip-path: circle(50px at center);
+  clip-path: circle(50px at center);
+}

@@ -1,6 +1,7 @@
 ---
 title: "Machine Learning: what can it do for you?"
 intro: "Did you ever question what it can do for you? This is a brief introduction to Machine Learning."
+author: "mark"
 ---
 
 What is Machine Learning (ML)? It is training the computer to make it predict a value or recognize objects, speech, letters, music notes, etc. This is supervised learning, because the output label is defined.
