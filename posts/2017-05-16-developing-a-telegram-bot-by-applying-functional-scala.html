@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vectos - Developing a Telegram bot by applying Functional Scala</title>
+    <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/flexslider.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/queries.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+    <link href="../css/animate.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+      </head>
+      <body id="top">
+
+        <header class="blog-header">
+  <section>
+    <div class="container text-center">
+      <div class="row animated fadeInDown delay-01s">
+        <a href="../" alt="Back to the homepage"><img src="../img/logo.png" /></a>
+      </div>
+    </div>
+  </section>
+</header>
+
+<section class="animated fadeInUp delay-05s blog-post">
+
+  <div class="col-md-10 col-md-offset-1">
+    <h1 class="arrow">Developing a Telegram bot by applying Functional Scala</h1>
+    <div class="info">May 16, 2017</div>
+
+    <p>In The Netherlands we have a good train network. However from time to time the Nederlandse Spoorwegen (NS - the guys who run the trains) have disruptions. I want to have notifications, so I can just check my phone when waking up and see if there is any trouble.</p>
+<p>To check out the source, please check <a href="https://github.com/Fristi/ns-tracker">ns-tracker</a></p>
+<h1 id="knowledge-prerequisites">Knowledge prerequisites</h1>
+<p>Before continue reading this article you should have a understanding of:</p>
+<ul>
+<li>API’s and formats like XML &amp; JSON</li>
+<li>Advanced Scala (implicits, type classes, generics, etc)</li>
+<li>Functional concepts like: Monads &amp; Monad Transformers</li>
+</ul>
+<h1 id="the-stack">The stack</h1>
+<p>I’ve used the following libraries:</p>
+<ul>
+<li><a href="https://github.com/typelevel/cats">Cats</a> - Functional Programming constructs (like Monad, Monad Transformers, etc)</li>
+<li>Postgres - For storing state in database</li>
+<li><a href="https://github.com/tpolecat/doobie">Doobie</a> - For JDBC database</li>
+<li><a href="https://github.com/circe/circe">Circe</a> - JSON encoding and decoding</li>
+<li><a href="https://github.com/functional-streams-for-scala/fs2">fs2</a> - Pull based stream processing. Offers also <code>Task</code>, a alternative to <code>Future</code></li>
+<li><a href="https://github.com/tpolecat/atto">Atto</a> - For parsing Telegram commands</li>
+</ul>
+<h1 id="telegram">Telegram</h1>
+<p>With Telegram you will be able to create so called bots. This is something which WhatsApp doesn’t offer. What does it mean to develop a Telegram bot?</p>
+<ul>
+<li>You can start talking to a bot and Telegram will buffer the messages</li>
+<li>Telegram will act a mediator. Any messages posted to a bot go through Telegram. You as bot developer have to either <em>long poll</em> for updates or set up a <em>web hook</em></li>
+<li>Each command is processed by your logic. That means you are responsible for persisting state and handling the commands</li>
+<li>For creating a basic bot you need to retrieve the messages which are posted in the bot and respond</li>
+<li>You can send a user a message any time</li>
+</ul>
+<h3 id="creating-a-bot-and-get-your-botid">Creating a bot and get your botId</h3>
+<p>You can create a bot by talking to the <em>BotFather</em>. By entering <code>/newbot</code> you’ll get a <code>botId</code> which is needed in the API calls</p>
+<h3 id="register-your-server">Register your server</h3>
+<p>You can either use <em>long polling</em> or <em>web hooks</em> to retrieve messages posted to a Telegram bot. I’ll explain how I did setup <em>web hooks</em>.</p>
+<p>You have to <code>POST https://api.telegram.org/bot{botId}/setWebhook</code> with a <code>form-urlencoded</code> body which contains <code>url={url_to_your_message_handler_endpoint}</code>.</p>
+<p>Whenever a user posts a message to your Telegram bot now, Telegram will post it to <code>url_to_your_message_handler_endpoint</code>.</p>
+<p>A message may look like this:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+    <span class="dt">&quot;update_id&quot;</span><span class="fu">:</span> <span class="dv">169800632</span><span class="fu">,</span>
+    <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+        <span class="dt">&quot;message_id&quot;</span><span class="fu">:</span> <span class="dv">646</span><span class="fu">,</span>
+        <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+            <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">348940006</span><span class="fu">,</span>
+            <span class="dt">&quot;first_name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mark&quot;</span><span class="fu">,</span>
+            <span class="dt">&quot;last_name&quot;</span><span class="fu">:</span> <span class="st">&quot;de Jong&quot;</span>
+        <span class="fu">},</span>
+        <span class="dt">&quot;chat&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+            <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">348940006</span><span class="fu">,</span>
+            <span class="dt">&quot;first_name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mark&quot;</span><span class="fu">,</span>
+            <span class="dt">&quot;last_name&quot;</span><span class="fu">:</span> <span class="st">&quot;de Jong&quot;</span><span class="fu">,</span>
+            <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;private&quot;</span>
+        <span class="fu">},</span>
+        <span class="dt">&quot;date&quot;</span><span class="fu">:</span> <span class="dv">1494929704</span><span class="fu">,</span>
+        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;test&quot;</span>
+    <span class="fu">}</span>
+<span class="fu">}</span></code></pre></div>
+<h3 id="send-a-message-back">Send a message back</h3>
+<p>Now you want to send back a message. You can use this endpoint to send a message back:</p>
+<p><code>POST https://api.telegram.org/bot{botId}/sendMessage</code> with also a <code>form-urlencoded</code> body contains these variables:</p>
+<ul>
+<li><code>chat_id</code> - The id of the chat</li>
+<li><code>text</code> - The actual message</li>
+</ul>
+<p>It will return you a JSON with the message you posted</p>
+<h1 id="nederlandse-spoorwegen-data">Nederlandse Spoorwegen data</h1>
+<p>To retrieve data from the Nederlandse Spoorwegen (NS), we can talk to their API. To be specific we can use the endpoint <code>GET https://webservices.ns.nl/ns-api-avt?station=Zwolle</code> to retrieve all voyages which depart from that station. You’ll need to use basic http authentication to actually retrieve data from this endpoint.</p>
+<p>The data is formatted in XML and looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;ActueleVertrekTijden&gt;</span>
+  <span class="kw">&lt;VertrekkendeTrein&gt;</span>
+    <span class="kw">&lt;RitNummer&gt;</span>535<span class="kw">&lt;/RitNummer&gt;</span>
+    <span class="kw">&lt;VertrekTijd&gt;</span>2017-05-16T11:45:00+0200<span class="kw">&lt;/VertrekTijd&gt;</span>
+    <span class="kw">&lt;VertrekVertraging&gt;</span>PT2M<span class="kw">&lt;/VertrekVertraging&gt;</span>
+    <span class="kw">&lt;VertrekVertragingTekst&gt;</span>+2 min<span class="kw">&lt;/VertrekVertragingTekst&gt;</span>
+    <span class="kw">&lt;EindBestemming&gt;</span>Groningen<span class="kw">&lt;/EindBestemming&gt;</span>
+    <span class="kw">&lt;TreinSoort&gt;</span>Intercity<span class="kw">&lt;/TreinSoort&gt;</span>
+    <span class="kw">&lt;RouteTekst&gt;</span>Assen<span class="kw">&lt;/RouteTekst&gt;</span>
+    <span class="kw">&lt;Vervoerder&gt;</span>NS<span class="kw">&lt;/Vervoerder&gt;</span>
+    <span class="kw">&lt;VertrekSpoor</span><span class="ot"> wijziging=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span>6<span class="kw">&lt;/VertrekSpoor&gt;</span>
+  <span class="kw">&lt;/VertrekkendeTrein&gt;</span>
+<span class="kw">&lt;/ActueleVertrekTijden&gt;</span></code></pre></div>
+<p>There is information like at which time the train departs, at which stations it will stop at, if there is any delay, etc.</p>
+<h1 id="high-level-architecture">High level architecture</h1>
+<p>The program contains basically two processes</p>
+<ul>
+<li>A interval based loop which retrieves a set of unique stations which have a watch. For each station it will contact the NS API. Whenever there is a disruption it will use the Telegram <code>sendMessage</code> API to notify the user. When this succeeds it will store that the user is notified in the database. This process will recur over time by a interval</li>
+<li>A HTTP server which is used to listen webhooks (called by Telegram)</li>
+</ul>
+<p>In functional programming we tend to keep our logic centered and push all the side-effects to the boundary of our application. There are numerous examples in functional programming for that: free monads, fs2, etc.</p>
+<p>One of the components of our program is the Telegram command to reply pipeline. From a webhook we extract the message (command) and pass it into a pipeline which translate the command to actual reply (with side effects). Let’s dive into how create such a pipeline.</p>
+<p>It would be a bad design to couple in the HttpRequest (from webhooks) or HttpResponse (from long polling) into the pipeline. The message is just a <code>String</code> and we need to act accordingly. By decoupling this, we could plug this pipeline either with long polling or webhooks.</p>
+<h1 id="telegram-command-to-reply-pipeline">Telegram command to reply pipeline</h1>
+<p>So for each command we need to:</p>
+<ul>
+<li>Parse the actual command in to a case class</li>
+<li>Use the case class to do stuff with the database (query, insert or remove a watch)</li>
+<li>Respond back to the user</li>
+</ul>
+<p>It’s a good practice to define the small steps required to achieve your end goal. Now let’s solve all the requirements step by step.</p>
+<h2 id="parsing">Parsing</h2>
+<p>How do we parse the Telegram messages? We could use a regular expression, but it would be better to use actual parsers. Rob Norris wrote a little and comprehensive parsing library called Atto.</p>
+<p>For this bot I made it possible to track, remove and list your watches by these commands:</p>
+<ul>
+<li><strong>track “from-station” “to-station” from-time till-time</strong> - Add a watch for voyage track for any disruptions. Note that <from_station> and <to_station> should surrounded by double-quotes. With time, note that <from_time> and <to_time> should be in a 24h format (00:00)</li>
+<li><strong>remove id</strong> - Remove a watch by id</li>
+<li><strong>list</strong> - List all watches and their id (to remove it)</li>
+</ul>
+<p>Let’s first define our commands:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">sealed</span> <span class="kw">trait</span> BotCommand
+<span class="kw">object</span> BotCommand {
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">TrackVoyage</span>(fromStation: String, toStation: String, fromHour: Time, toHour: Time) <span class="kw">extends</span> BotCommand
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">RemoveVoyage</span>(id: Int) <span class="kw">extends</span> BotCommand
+  <span class="kw">case</span> <span class="kw">object</span> ListVoyages <span class="kw">extends</span> BotCommand
+}</code></pre></div>
+<p>Parsing this with Atto is quite simple:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">object</span> Parsing {
+  <span class="kw">private</span> <span class="kw">def</span> <span class="fu">fixed</span>(n: Int): Parser[Int] =
+    <span class="fu">count</span>(n, digit).<span class="fu">map</span>(_.<span class="fu">mkString</span>).<span class="fu">flatMap</span> { s =&gt;
+      <span class="kw">try</span> <span class="fu">ok</span>(s.<span class="fu">toInt</span>) <span class="kw">catch</span> {
+        <span class="kw">case</span> e: NumberFormatException =&gt; <span class="fu">err</span>(e.<span class="fu">toString</span>)
+      }
+    }
+
+  <span class="kw">private</span> <span class="kw">val</span> time = (<span class="fu">fixed</span>(<span class="dv">2</span>) &lt;~ <span class="dt">char</span>(':') |@| <span class="fu">fixed</span>(<span class="dv">2</span>)) map Time.<span class="fu">apply</span>
+  <span class="kw">private</span> <span class="kw">val</span> station = stringLiteral
+
+  <span class="kw">val</span> trackVoyage: Parser[BotCommand.<span class="fu">TrackVoyage</span>] =
+    (<span class="fu">string</span>(<span class="st">&quot;track&quot;</span>) ~&gt; (spaceChar ~&gt; station) |@| (spaceChar ~&gt; station) |@| (spaceChar ~&gt; time) |@| (spaceChar ~&gt; time)) map BotCommand.<span class="fu">TrackVoyage</span>.<span class="fu">apply</span>
+
+  <span class="kw">val</span> removeVoyage: Parser[BotCommand.<span class="fu">RemoveVoyage</span>] =
+    (<span class="fu">string</span>(<span class="st">&quot;remove&quot;</span>) ~&gt; (spaceChar ~&gt; <span class="dt">int</span>)) map BotCommand.<span class="fu">RemoveVoyage</span>.<span class="fu">apply</span>
+
+  <span class="kw">val</span> listVoyages: Parser[BotCommand.<span class="fu">ListVoyages</span>.<span class="fu">type</span>] =
+    <span class="fu">string</span>(<span class="st">&quot;list&quot;</span>) &gt;| BotCommand.<span class="fu">ListVoyages</span>
+}</code></pre></div>
+<h2 id="creating-handlers">Creating handlers</h2>
+<p>Now we got the parsers we need to create handlers for each command. So what is needed for a command handler?</p>
+<ul>
+<li>We need a parser which extracts the actual command as a case class (we’ve used coded that as a <code>Parser[A]</code>)</li>
+<li>There is a choice between multiple handlers. Whenever the parsing succeeds it should continue with the supplied function (which has the extracted command and performs database queries) and when it fails to parse, it should try the next handler</li>
+<li>We have branching in our command handling. The entered command might a good one, or one which will fail. We need to verify that by using assertions or database queries. In the end the format of result will be the same (A user expects a message what his command did)</li>
+</ul>
+<h3 id="partial-functions">Partial functions</h3>
+<p>So let’s start with the choice between multiple handlers. We can model that with a <code>PartialFunction</code>. The nice thing about <code>PartialFunction</code> is that they are composable. You can combine multiple <code>PartialFunction</code>’s by using <code>orElse</code> You can create a partial function by using <code>Function.unlift</code>. The signature looks like: <code>def unlift[T, R](f: T =&gt; Option[R]): PartialFunction[T, R]</code> which is in the standard Scala library.</p>
+<p>So a quick a example:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> a = Function.<span class="fu">unlift</span>[String, Int](str =&gt; <span class="kw">if</span>(str == <span class="st">&quot;1&quot;</span>) Some(<span class="dv">1</span>) <span class="kw">else</span> None)
+<span class="kw">val</span> b = Function.<span class="fu">unlift</span>[String, Int](str =&gt; <span class="kw">if</span>(str == <span class="st">&quot;2&quot;</span>) Some(<span class="dv">2</span>) <span class="kw">else</span> None)
+<span class="kw">val</span> c = a orElse b
+
+<span class="kw">def</span> <span class="fu">process</span>(i: String) = c.<span class="fu">applyOrElse</span>(i, (_: String) =&gt; <span class="dv">0</span>)
+
+<span class="fu">process</span>(<span class="st">&quot;1&quot;</span>) <span class="co">// will return 1</span>
+<span class="fu">process</span>(<span class="st">&quot;3&quot;</span>) <span class="co">// will return 0</span></code></pre></div>
+<p>This is of course a simple example, but it will work with our little <code>Parser[A]</code>. We can feed that a <code>String</code> using <code>parseOnly</code> which will return a <code>ParseResult[A]</code> which is convertible to a <code>Option[A]</code>. That’s exactly what we need for <code>PartialFunction</code>!</p>
+<h3 id="branching-and-running-database-effects">Branching and running database effects</h3>
+<p>So now we get to the part where we need branch our computations and run database effects. Like stated before we are using Doobie for the database. Running a query will return us a <code>Task[A]</code> and requires us to have a <code>transactor.Transactor[Task]</code> to turn <code>Query[A]</code> into <code>Task[Vector[A]]</code> for example.</p>
+<p>To have <code>transactor.Transactor[Task]</code> available, we can use a <code>type Prg[A] = ReaderT[F, transactor.Transactor[Task], A]]</code> for this matter. Where <code>F[_]</code> is a Monad. You don’t need to pass this <code>transactor.Transactor[Task]</code> around when writing a handler, we push this concern to the boundary of our app.</p>
+<p>Whenever a query returns not enough results or the entered information is incorrect we need to return a error or continue whenever everything is alright. In other words branching. We can use <code>Either[L, R]</code> to do branching (which is right biased in Scala 2.12 and forms a Monad). However we need to evaluate effects of <code>Task[_]</code> (<code>Task[_]</code> is also a Monad). So we’ll need a <code>type Prg[A] = EitherT[Task, String, A]</code> (monad transformer). This also forms a Monad, so we can put this into the <code>F[_]</code> of <code>type Prg[A] = ReaderT[F, transactor.Transactor[Task], A]</code>.</p>
+<p>This will give us a <code>type Prg[A] =&gt; ReaderT[EitherT[Task, String, ?], transactor.Transactor[Task], A]]</code>. What is this <code>?</code> synax. Basically it is syntax sugar for type lambda’s. You can find more info on that on the <a href="https://github.com/non/kind-projector">kind-projector</a> project.</p>
+<p>To actual lift expressions <code>Option[A]</code>, <code>Query[A]</code> or <code>Task[A]</code> to this monad transformer stack I create several combinators which ease the process. I’ve left those out in this article, but you may see them in the final example. In case you are curious, you could check the source code to see their implementation.</p>
+<h3 id="putting-it-together">Putting it together</h3>
+<p>So how do we put this together? The handle combinator would look something like this:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> handle[A](p: Parser[A])(f: A =&gt; ReaderT[EitherT[Task, String, ?], transactor.<span class="fu">Transactor</span>[Task], String]]) =
+    Function.<span class="fu">unlift</span>[String, ReaderT[Task, transactor.<span class="fu">Transactor</span>[Task], String]](x =&gt;
+      p.<span class="fu">parseOnly</span>(x).<span class="fu">map</span>(y =&gt; <span class="fu">f</span>(x).<span class="fu">mapF</span>(_.<span class="fu">fold</span>(identity, identity))).<span class="fu">option</span>
+    )</code></pre></div>
+<p>So let’s break this down. The arguments are</p>
+<ul>
+<li><code>p: Parser[A]</code> is required to extract <code>A</code> from a <code>String</code></li>
+<li><code>f: A =&gt; ReaderT[EitherT[Task, String, ?], transactor.Transactor[Task], String]]</code> is the actual handler function. It returns the monad stack as composed before and it consumes the parsed <code>A</code></li>
+</ul>
+<p>In the implementation of the handler combinator, <code>Function.unlift</code> will consume <code>String</code> and return a <code>ReaderT[Task, transactor.Transactor[Task], String]</code>. First we use the parse the string using <code>p.parseOnly(x)</code>. This will return a <code>ParseResult[A]</code> which has a <code>map</code> combinator. After that we apply our <code>f</code> function to get a <code>ReaderT[EitherT[Task, String, ?], transactor.Transactor[Task], String]]</code>. After that we use <code>mapF</code> to remove the disjunction part (<code>EitherT</code>) by <code>_.fold(identity, identity)</code>. After that we use the <code>.option</code> combinator to turn <code>ParseResult[ReaderT[Task, transactor.Transactor[Task], String]]</code> into a <code>Option[ReaderT[Task, transactor.Transactor[Task], String]]</code>. Remember that we need to return a Option for <code>Function.unlift</code>. So that concludes the implementation of the handle combinator. Below a example of the usage of <code>handle</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> add = <span class="fu">handle</span>(Parsing.<span class="fu">trackVoyage</span>) { req =&gt;
+  <span class="kw">for</span> {
+    _ &lt;- <span class="fu">guard</span>(Stations.<span class="fu">names</span>.<span class="fu">contains</span>(req.<span class="fu">fromStation</span>), s<span class="st">&quot;Station '${req.fromStation}' not found&quot;</span>)
+    _ &lt;- <span class="fu">guard</span>(Stations.<span class="fu">names</span>.<span class="fu">contains</span>(req.<span class="fu">toStation</span>), s<span class="st">&quot;Station '${req.toStation}' not found&quot;</span>)
+    _ &lt;- <span class="fu">update</span>(<span class="fu">VoyageSubscription</span>(req.<span class="fu">fromStation</span>, req.<span class="fu">toStation</span>, req.<span class="fu">fromHour</span>, req.<span class="fu">toHour</span>))(Queries.<span class="fu">insertSubscription</span>)
+  } <span class="kw">yield</span> <span class="st">&quot;Added&quot;</span>
+}
+
+<span class="kw">val</span> remove = <span class="fu">handle</span>(Parsing.<span class="fu">removeVoyage</span>) { req =&gt;
+  <span class="kw">for</span> {
+    count &lt;- <span class="fu">update0</span>(Queries.<span class="fu">removeSubscription</span>(req.<span class="fu">id</span>, req.<span class="fu">chatId</span>))
+    _ &lt;- <span class="fu">guard</span>(count &gt; <span class="dv">0</span>, s<span class="st">&quot;Failed to removed voyage with id ${req.id}&quot;</span>)
+  } <span class="kw">yield</span> <span class="st">&quot;Removed&quot;</span>
+}
+
+<span class="kw">val</span> list = <span class="fu">handle</span>(Parsing.<span class="fu">listVoyages</span>) { req =&gt;
+  <span class="kw">for</span> {
+    voyages &lt;- <span class="fu">listQuery</span>(Queries.<span class="fu">listSubscriptions</span>(req.<span class="fu">chatId</span>))
+  } <span class="kw">yield</span>
+    <span class="kw">if</span> (voyages.<span class="fu">nonEmpty</span>) <span class="fu">BotReply</span>(voyages.<span class="fu">map</span>(v =&gt; s<span class="st">&quot;${v.id} | ${v.value.fromStation} -&gt;&gt; ${v.value.toStation}&quot;</span>).<span class="fu">mkString</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>))
+    <span class="kw">else</span> <span class="st">&quot;You don't have any voyages yet!&quot;</span>
+}
+
+<span class="kw">val</span> handlers = add orElse remove orElse list
+
+<span class="kw">def</span> <span class="fu">handleRequest</span>(xa: transactor.<span class="fu">Transactor</span>[Task])
+                 (r: String): Task[String] = {
+  <span class="kw">val</span> fail = (_: String) =&gt; ReaderT[Task, transactor.<span class="fu">Transactor</span>[Task], String](_ =&gt; Task.<span class="fu">now</span>(<span class="st">&quot;Invalid command&quot;</span>))
+
+  handlers.<span class="fu">applyOrElse</span>(r, fail).<span class="fu">run</span>(xa)
+}</code></pre></div>
+<p>As you can see, it’s very concise to define handlers. Like I said before I’ve defined monad transformer combinators like <code>guard</code>, <code>update</code>, <code>update0</code>, <code>listQuery</code>, etc for validating, retrieving and update/inserting data (you can see their implementation at the repository).</p>
+<p>So to recap, how did we design this pipeline?</p>
+<ul>
+<li>We split up our problems in small steps</li>
+<li>For each step we evaluate which solutions we could apply (by experimenting or consulting our functional programming tools)</li>
+<li>We model our side-effects and branching explicitly</li>
+<li>We push side-effects to the boundary of the program</li>
+</ul>
+<h1 id="stream-processing-with-fs2">Stream processing with fs2</h1>
+<p>Like stated before we have two processes in our program. One for handling HTTP requests and one for pulling the database from time to time and check if there any disruptions for the interested watchers. I’ll show and explain the latter.</p>
+<p>This is the code for pulling the database and notify the watcher in case of a disruption:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">//a `Task[_]` which sends a telegram message and stores that we've notified the user in the database</span>
+<span class="kw">def</span> <span class="fu">notify</span>(sub: Entity[VoyageSubscription], delayedVoyage: Voyage): Task[Int] = ???
+
+<span class="kw">val</span> notifier: Stream[Task, Unit] = <span class="kw">for</span> {
+  _ &lt;- fs2.<span class="fu">time</span>.<span class="fu">awakeEvery</span>(<span class="fl">60.</span>seconds)
+  voyageSubscription &lt;- Queries.<span class="fu">uniqueSubscribedStations</span>.<span class="fu">process</span>.<span class="fu">transact</span>(xa)
+  voyages &lt;- Stream.<span class="fu">eval</span>(NsApi.<span class="fu">voyages</span>(voyageSubscription.<span class="fu">fromStation</span>).<span class="fu">run</span>(cfg.<span class="fu">ns</span>))
+  delayedVoyage &lt;- Stream.<span class="fu">emits</span>(voyages.<span class="fu">filter</span>(x =&gt; x.<span class="fu">delay</span>.<span class="fu">nonEmpty</span> || x.<span class="fu">comments</span>.<span class="fu">exists</span>(_.<span class="fu">contains</span>(<span class="st">&quot;Rijdt niet&quot;</span>))))
+  sub &lt;- Queries.<span class="fu">subscriptions</span>(voyageSubscription.<span class="fu">subscriptionIds</span>, delayedVoyage.<span class="fu">ritNr</span>).<span class="fu">process</span>.<span class="fu">transact</span>(xa)
+  _ &lt;- <span class="kw">if</span>(delayedVoyage.<span class="fu">destinations</span>.<span class="fu">contains</span>(sub.<span class="fu">value</span>.<span class="fu">toStation</span>)) Stream.<span class="fu">eval</span>(<span class="fu">notify</span>(sub, delayedVoyage)) <span class="kw">else</span> Stream.<span class="fu">emit</span>(())
+} <span class="kw">yield</span> ()</code></pre></div>
+<p>We can build up a <code>Stream[F, A]</code> by using a for-comprehension. This is because <code>Stream</code> is also a Monad.</p>
+<ol style="list-style-type: decimal">
+<li><code>_ &lt;- fs2.time.awakeEvery(60.seconds)</code> - will sleep the stream for 60 seconds</li>
+<li><code>voyageSubscription &lt;- Queries.uniqueSubscribedStations.process.transact(xa)</code> - Will retrieve all stations which are been watched by the users. <code>.process</code> will turn this <code>Query[VoyageSubscriptions]</code> into <code>Stream[Task, VoyageSubscriptions]</code></li>
+<li><code>voyages &lt;- Stream.eval(NsApi.voyages(voyageSubscription.fromStation).run(cfg.ns))</code> - Will call the NS API and retrieve a <code>List[Voyage]</code>. The combinator <code>Stream.eval</code> will evaluate a <code>Task[A]</code> and put it into the <code>Stream[Task, A]</code></li>
+<li><code>delayedVoyage &lt;- Stream.emits(voyages.filter(x =&gt; x.delay.nonEmpty || x.comments.exists(_.contains(&quot;Rijdt niet&quot;))))</code> - Will only filter delayed voyages. After that we use <code>Stream.emits</code> to emit a <code>Seq[A]</code> to a <code>Stream[Task, A]</code></li>
+<li><code>sub &lt;- Queries.subscriptions(voyageSubscription.subscriptionIds, delayedVoyage.ritNr).process.transact(xa)</code> - Will retrieve a list of watches which are not notified yet. Note that we use <code>.process</code> again to retrieve a query as a <code>Stream[Task, A]</code>.</li>
+<li><code>_ &lt;- if(delayedVoyage.destinations.contains(sub.value.toStation)) Stream.eval(notify(sub, delayedVoyage)) else Stream.emit(())</code> - Will check if <code>delayedVoyage.destinations</code> contains the target station of the watcher. If so, we’ll notify otherwise we just continue.</li>
+</ol>
+<p>As you can see it’s very easy build a pull based stream processor by using fs2 and doobie.</p>
+<h1 id="conclusion-and-future-work">Conclusion and future work</h1>
+<p>I liked writing code in the functional style in Scala. We explicitly capture side effects, push the effects to the outside of the program, pull based stream processing, easy configuration and excellent JSON encoding/decoding. The quality of these functional libraries are excellent.</p>
+<p>The work on this bot is not complete. It needs circuit breakers, setting up a watch can be conversational, etc.</p>
+
+  </div>
+
+</section>
+
+<section>
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4 text-center">
+      <h1 class="arrow">Written by</h1>
+      <div class="wp5 animated fadeInUp">
+        <img src="../img/mark.jpg" class="author-clip" alt="Mark de Jong" />
+        <h2>Mark de Jong</h2>
+        <p>Scala/Haskell Software Developer - Specialised in web-apps and high performance backend systems.</p>
+        <div class="social">
+          <ul class="social-buttons">
+            <li><a href="mailto:mark@vectos.net" class="social-btn"><i class="fa fa-envelope"></i></a></li>
+            <li><a target="_blank" href="https://www.linkedin.com/in/markdj1986" class="social-btn"><i class="fa fa-linkedin"></i></a></li>
+            <li><a target="_blank" href="https://twitter.com/mark_dj" class="social-btn"><i class="fa fa-twitter"></i></a></li>
+            <li><a target="_blank" href="https://github.com/Fristi" class="social-btn"><i class="fa fa-github"></i></a></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+</section>
+
+<section class="section-padding">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 text-center">
+      <a href="../" class="learn-more-btn">Back to the homepage</a>
+    </div>
+  </div>
+</section>
+
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="../js/waypoints.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/scripts.js"></script>
+        <script src="../js/jquery.flexslider.js"></script>
+        <script src="../js/modernizr.js"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-4774165-7', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+      </body>
+    </html>
