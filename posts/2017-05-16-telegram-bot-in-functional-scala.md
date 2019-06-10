@@ -1,38 +1,38 @@
 ---
 title: "Developing a Telegram bot by applying Functional Scala"
-intro: " In this article I'll explain how I build a Telegram bot by applying Functional Scala. Libraries used are: FS2, Circe, Doobie and Atto"
+intro: " In this article, I'll explain how I build a Telegram bot by applying Functional Scala. Libraries used are FS2, Circe, Doobie, and Atto"
 author: "mark"
 ---
 
-In The Netherlands we have a good train network. However from time to time the Nederlandse Spoorwegen (NS - the guys who run the trains) have disruptions. I want to have notifications, so I can just check my phone when waking up and see if there is any trouble.
+In The Netherlands, we have a good train network. However, from time to time the Nederlandse Spoorwegen (NS - the guys who run the trains) have disruptions. I want to have notifications, so I can just check my phone when waking up and see if there is any trouble.
 
 To check out the source, please check ns-tracker
 
 ## Knowledge prerequisites
 
-Before continue reading this article you should have a understanding of:
+Before continue reading this article you should have an understanding of:
 
 - API’s and formats like XML & JSON
 - Advanced Scala (implicits, type classes, generics, etc)
-- Functional concepts like: Monads & Monad Transformers
+- Functional concepts like Monads & Monad Transformers
 
 ## The stack
 
 I’ve used the following libraries:
 
 - Cats - Functional Programming constructs (like Monad, Monad Transformers, etc)
-- Postgres - For storing state in database
+- Postgres - For storing state in the database
 - Doobie - For JDBC database
 - Circe - JSON encoding and decoding
-- fs2 - Pull based stream processing. Offers also Task, a alternative to Future
+- fs2 - Pull based stream processing. Offers also Task, an alternative to Future
 - Atto - For parsing Telegram commands
 
 ## Telegram
 
-With Telegram you will be able to create so called bots. This is something which WhatsApp doesn’t offer. What does it mean to develop a Telegram bot?
+With Telegram, you will be able to create bots. This is something which WhatsApp doesn’t offer. What does it mean to develop a Telegram bot?
 
 - You can start talking to a bot and Telegram will buffer the messages
-- Telegram will act a mediator. Any messages posted to a bot go through Telegram. You as bot developer have to either long poll for updates or set up a web hook
+- Telegram will act as a mediator. Any messages posted to a bot go through Telegram. You as bot developer have to either long poll for updates or set up a webhook
 - Each command is processed by your logic. That means you are responsible for persisting state and handling the commands
 - For creating a basic bot you need to retrieve the messages which are posted in the bot and respond
 - You can send a user a message any time
@@ -43,7 +43,7 @@ You can create a bot by talking to the BotFather. By entering /newbot you’ll g
 
 ### Register your server
 
-You can either use long polling or web hooks to retrieve messages posted to a Telegram bot. I’ll explain how I did setup web hooks.
+You can either use long polling or webhooks to retrieve messages posted to a Telegram bot. I’ll explain how I did setup webhooks.
 
 You have to POST https://api.telegram.org/bot{botId}/setWebhook with a form-urlencoded body which contains url={url_to_your_message_handler_endpoint}.
 
@@ -85,7 +85,7 @@ Now you want to send back a message. You can use this endpoint to send a message
 It will return you a JSON with the message you posted
 Nederlandse Spoorwegen data
 
-To retrieve data from the Nederlandse Spoorwegen (NS), we can talk to their API. To be specific we can use the endpoint `GET https://webservices.ns.nl/ns-api-avt?station=Zwolle` to retrieve all voyages which depart from that station. You’ll need to use basic http authentication to actually retrieve data from this endpoint.
+To retrieve data from the Nederlandse Spoorwegen (NS), we can talk to their API. To be specific we can use the endpoint `GET https://webservices.ns.nl/ns-api-avt?station=Zwolle` to retrieve all voyages which depart from that station. You’ll need to use basic HTTP authentication to retrieve data from this endpoint.
 
 The data is formatted in XML and looks like this:
 
@@ -105,28 +105,28 @@ The data is formatted in XML and looks like this:
 </ActueleVertrekTijden>
 ```
 
-There is information like at which time the train departs, at which stations it will stop at, if there is any delay, etc.
+There is information like at which time the train departs, at which stations it will stop it, if there is any delay, etc.
 
-## High level architecture
+## High-level architecture
 
-The program contains basically two processes
+The program contains two processes
 
-- A interval based loop which retrieves a set of unique stations which have a watch. For each station it will contact the NS API. Whenever there is a disruption it will use the Telegram sendMessage API to notify the user. When this succeeds it will store that the user is notified in the database. This process will recur over time by a interval
-- A HTTP server which is used to listen webhooks (called by Telegram)
+- An interval based loop which retrieves a set of unique stations that have a watch. For each station, it will contact the NS API. Whenever there is a disruption it will use the Telegram sendMessage API to notify the user. When this succeeds it will store that the user is notified in the database. This process will recur over time by an interval
+- An HTTP server which is used to listen webhooks (called by Telegram)
 
-In functional programming we tend to keep our logic centered and push all the side-effects to the boundary of our application. There are numerous examples in functional programming for that: free monads, fs2, etc.
+In functional programming, we tend to keep our logic centered and push all the side-effects to the boundary of our application. There are numerous examples in functional programming for that: free monads, fs2, etc.
 
-One of the components of our program is the Telegram command to reply pipeline. From a webhook we extract the message (command) and pass it into a pipeline which translate the command to actual reply (with side effects). Let’s dive into how create such a pipeline.
+One of the components of our program is the Telegram command to reply pipeline. From a webhook, we extract the message (command) and pass it into a pipeline which translates the command to actual reply (with side effects). Let’s dive into how to create such a pipeline.
 
 It would be a bad design to couple in the HttpRequest (from webhooks) or HttpResponse (from long polling) into the pipeline. The message is just a String and we need to act accordingly. By decoupling this, we could plug this pipeline either with long polling or webhooks.
 
 ## Telegram command to reply pipeline
 
-So for each command we need to:
+So for each command, we need to:
 
-- Parse the actual command in to a case class
+- Parse the actual command into a case class
 - Use the case class to do stuff with the database (query, insert or remove a watch)
-- Respond back to the user
+- Respond to the user
 
 It’s a good practice to define the small steps required to achieve your end goal. Now let’s solve all the requirements step by step.
 
@@ -137,7 +137,7 @@ How do we parse the Telegram messages? We could use a regular expression, but it
 
 For this bot I made it possible to track, remove and list your watches by these commands:
 
-- track “from-station” “to-station” from-time till-time - Add a watch for voyage track for any disruptions. Note that and should surrounded by double-quotes. With time, note that and should be in a 24h format (00:00)
+- track “from-station” “to-station” from-time till-time - Add a watch for voyage track for any disruptions. Note that and should be surrounded by double-quotes. With time, note that and should be in a 24h format (00:00)
 - remove id - Remove a watch by id
 - list - List all watches and their id (to remove it)
 
@@ -183,7 +183,7 @@ Now we got the parsers we need to create handlers for each command. So what is n
 
 - We need a parser which extracts the actual command as a case class (we’ve used coded that as a Parser[A])
 - There is a choice between multiple handlers. Whenever the parsing succeeds it should continue with the supplied function (which has the extracted command and performs database queries) and when it fails to parse, it should try the next handler
-- We have branching in our command handling. The entered command might a good one, or one which will fail. We need to verify that by using assertions or database queries. In the end the format of result will be the same (A user expects a message what his command did)
+- We have branching in our command handling. The entered command might a good one, or one which will fail. We need to verify that by using assertions or database queries. In the end, the format of the result will be the same (A user expects a message what his command did)
 
 #### Partial functions
 
@@ -202,18 +202,18 @@ process("1") // will return 1
 process("3") // will return 0
 ```
 
-This is of course a simple example, but it will work with our little `Parser[A]`. We can feed that a String using parseOnly which will return a `ParseResult[A]` which is convertible to a `Option[A]`. That’s exactly what we need for PartialFunction!
+This is, of course, a simple example, but it will work with our little `Parser[A]`. We can feed that a String using parseOnly which will return a `ParseResult[A]` which is convertible to an `Option[A]`. That’s exactly what we need for PartialFunction!
 Branching and running database effects
 
-So now we get to the part where we need branch our computations and run database effects. Like stated before we are using Doobie for the database. Running a query will return us a `Task[A]` and requires us to have a `transactor.Transactor[Task]` to turn `Query[A]` into `Task[Vector[A]]` for example.
+So now we get to the part where we need to branch our computations and run database effects. As stated before we are using Doobie for the database. Running a query will return us a `Task[A]` and requires us to have a `transactor.Transactor[Task]` to turn `Query[A]` into `Task[Vector[A]]` for example.
 
 To have `transactor.Transactor[Task]` available, we can use a type `Prg[A] = ReaderT[F, transactor.Transactor[Task], A]]` for this matter. Where `F[_]` is a `Monad`. You don’t need to pass this `transactor.Transactor[Task]` around when writing a handler, we push this concern to the boundary of our app.
 
-Whenever a query returns not enough results or the entered information is incorrect we need to return a error or continue whenever everything is alright. In other words branching. We can use `Either[L, R]` to do branching (which is right biased in Scala 2.12 and forms a Monad). However we need to evaluate effects of `Task[_]` (`Task[_]` is also a Monad). So we’ll need a `type Prg[A] = EitherT[Task, String, A]` (monad transformer). This also forms a `Monad`, so we can put this into the `F[_]` of `type Prg[A] = ReaderT[F, transactor.Transactor[Task], A]`.
+Whenever a query returns not enough results or the entered information is incorrect we need to return an error or continue whenever everything is alright. In other words, branching. We can use `Either[L, R]` to do branching (which is right biased in Scala 2.12 and forms a Monad). However, we need to evaluate the effects of `Task[_]` (`Task[_]` is also a Monad). So we’ll need a `type Prg[A] = EitherT[Task, String, A]` (monad transformer). This also forms a `Monad`, so we can put this into the `F[_]` of `type Prg[A] = ReaderT[F, transactor.Transactor[Task], A]`.
 
-This will give us a `type Prg[A] => ReaderT[EitherT[Task, String, ?], transactor.Transactor[Task], A]]`. What is this `?` synax. Basically it is syntax sugar for type lambda’s. You can find more info on that on the kind-projector project.
+This will give us a `type Prg[A] => ReaderT[EitherT[Task, String, ?], transactor.Transactor[Task], A]]`. What is this `?` syntax. It is syntax sugar for type lambdas. You can find more info on that on the kind-projector project.
 
-To actual lift expressions `Option[A]`, `Query[A]` or `Task[A]` to this monad transformer stack I create several combinators which ease the process. I’ve left those out in this article, but you may see them in the final example. In case you are curious, you could check the source code to see their implementation.
+To actual lift expressions `Option[A]`, `Query[A]` or `Task[A]` to this monad transformer stack I create several combinators that ease the process. I’ve left those out in this article, but you may see them in the final example. In case you are curious, you could check the source code to see their implementation.
 
 ## Putting it together
 
@@ -272,15 +272,15 @@ As you can see, it’s very concise to define handlers. Like I said before I’v
 So to recap, how did we design this pipeline?
 
 - We split up our problems in small steps
-- For each step we evaluate which solutions we could apply (by experimenting or consulting our functional programming tools)
+- For each step, we evaluate which solutions we could apply (by experimenting or consulting our functional programming tools)
 - We model our side-effects and branching explicitly
 - We push side-effects to the boundary of the program
 
 # Stream processing with fs2
 
-Like stated before we have two processes in our program. One for handling HTTP requests and one for pulling the database from time to time and check if there any disruptions for the interested watchers. I’ll show and explain the latter.
+As stated before we have two processes in our program. One for handling HTTP requests and one for pulling the database from time to time and check if there any disruptions for the interested watchers. I’ll show and explain the latter.
 
-This is the code for pulling the database and notify the watcher in case of a disruption:
+This is the code for pulling the database and notify the watcher in case of disruption:
 
 ```scala
 //a `Task[_]` which sends a telegram message and stores that we've notified the user in the database
@@ -305,10 +305,10 @@ We can build up a Stream[F, A] by using a for-comprehension. This is because Str
 - `sub <- Queries.subscriptions(voyageSubscription.subscriptionIds, delayedVoyage.ritNr).process.transact(xa)` - Will retrieve a list of watches which are not notified yet. Note that we use `.process` again to retrieve a query as a `Stream[Task, A]`.
 - `_ <- if(delayedVoyage.destinations.contains(sub.value.toStation)) Stream.eval(notify(sub, delayedVoyage)) else Stream.emit(())` - Will check if `delayedVoyage.destinations` contains the target station of the watcher. If so, we’ll notify otherwise we just continue.
 
-As you can see it’s very easy build a pull based stream processor by using fs2 and doobie.
+As you can see it’s very easily building a pull-based stream processor by using fs2 and doobie.
 
 # Conclusion and future work
 
-I liked writing code in the functional style in Scala. We explicitly capture side effects, push the effects to the outside of the program, pull based stream processing, easy configuration and excellent JSON encoding/decoding. The quality of these functional libraries are excellent.
+I liked writing code in the functional style in Scala. We explicitly capture side effects, push the effects to the outside of the program, pull-based stream processing, easy configuration, and excellent JSON encoding/decoding. The quality of these functional libraries is excellent.
 
 The work on this bot is not complete. It needs circuit breakers, setting up a watch can be conversational, etc.
