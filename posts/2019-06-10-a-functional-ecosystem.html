@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vectos - A functional ecosystem</title>
+    <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/flexslider.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/queries.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+    <link href="../css/animate.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+      </head>
+      <body id="top">
+
+        <header class="blog-header">
+  <section>
+    <div class="container text-center">
+      <div class="row animated fadeInDown delay-01s">
+        <a href="../" alt="Back to the homepage"><img src="../img/logo.png" /></a>
+      </div>
+    </div>
+  </section>
+</header>
+
+<section class="animated fadeInUp delay-05s blog-post">
+
+  <div class="col-md-10 col-md-offset-1">
+    <h1 class="arrow">A functional ecosystem</h1>
+    <div class="info">June 10, 2019</div>
+
+    <h1 id="a-functional-ecosystem">A functional ecosystem</h1>
+<p>In this post I would like to go over some of the tech I used to build a new micro-service at DHL and why these technologies and methodologies could be interesting as well for you. I had the freedom to pick new technologies. I would like to thank DHL Netherlands to give me this opportunity.</p>
+<p>Back to the project! I’m quite fond of functional programming and I decided to roll with a functional stack. The stack includes http4s, circe, refined, doobie, cats, cats-tagless, cats-effect and on top of that ZIO.</p>
+<p>I think there is some great material already out there about cats, http4s, circe, discipline, scalacheck and ZIO.</p>
+<ul>
+<li><a href="https://underscore.io/books/scala-with-cats/">Introduction to Cats - Scala with Cats</a></li>
+<li><a href="https://www.youtube.com/watch?v=8JLprl34xEw">Quick ZIO intro/motivation and John talks about Queue’s - John de Goes</a></li>
+<li><a href="https://www.youtube.com/watch?v=urdtmx4h5LE">http4s - pure, typeful, functional HTTP in Scala</a></li>
+<li><a href="https://www.youtube.com/watch?v=d6WWmia0BPM">STM - John de Goes &amp; Wiem Zine Elabadine</a></li>
+<li><a href="https://www.iteratorshq.com/blog/tagless-with-discipline-testing-scala-code-the-right-way/">On testing tagless final algebras with discipline</a></li>
+<li><a href="https://www.youtube.com/watch?v=zExb9x3fzKs">Decorate your types with refined</a></li>
+</ul>
+<h2 id="preciser-types-with-refinement-types">Preciser types with refinement types</h2>
+<p>In a typical Scala application, you model data structures with primitive types such as <code>String</code>, <code>Int</code> and so forth. In a lot of cases, these primitive types are too wide, in other words, they accept too many values. This makes it harder to test your function because your function and data structures will accept a lot of values and can, therefore, be in a lot of states. To constrain these primitive types we can use <em>refinement types</em>.</p>
+<p>A basic example of this. In my backend we referrer to a depot by a depot code. This is 3 characters long code. In a refinement type I would describe it like this:</p>
+<h3 id="basic-example">Basic example</h3>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">type</span> DepotCode = Size[Equal[W.`<span class="dv">3</span>`.<span class="fu">T</span>]]
+
+<span class="kw">def</span> <span class="fu">getUsers</span>(depotCode: String Refined DepotCode): Task[List[User]] = ???</code></pre></div>
+<p>In this example, I have a method <code>getUsers</code> which has a refined <code>String</code> type which only allows a <code>String</code> of 3 characters. This is incredibly useful because the method is easier to test and you don’t need to check if the <code>depotCode</code> is a <code>String</code> of 3 characters long.</p>
+<h3 id="what-else">What else?</h3>
+<p>This is a basic example of refinement types. You can also use variable sized strings (3 to 200 chars), regular expressions, etcetera. The variable sized strings could be useful to not lose data when you store it in a database like Postgres or MySQL.</p>
+<p>There are modules for cats, circe, doobie and other libraries that deal with data to constrain your primitives. In my backend, I use circe to encode and decode JSON. With refinement types module for circe, I can be sure that an incoming payload from an HTTP endpoint is in the right shape for me to process further. This eliminates a lot of bugs and tests.</p>
+<p>You can also do this by using lists and sets which are not empty like <code>NonEmptyList</code> and <code>NonEmptySet</code>. You can even go further and include the dimensions of a collection in a type by using dependent types. This could be useful for matrix operations which is relevant in machine learning.</p>
+<h2 id="sql-is-expressive-do-not-lose-its-power">SQL is expressive, do not lose its power</h2>
+<p>In the past, I’ve been using Slick and Hibernate which make mappings to types (ORM’s). While this adds type-safety I think there are some downsides to these approaches:</p>
+<ul>
+<li>Slick or Hibernate outputs SQL which you need to see for yourself if it’s any good</li>
+<li>Slick or Hibernate is not an expressive as SQL (for example generate a time series and over each day do a sub-query)</li>
+</ul>
+<p>Therefore I prefer Doobie over these solutions. Doobie has a specialized string interpolator for SQL queries. So you can write SQL queries as you are used to, but use string interpolation to safely insert values into your queries like this:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">list</span>(userId: UserId): Query0[ExamResult] =
+    sql<span class="st">&quot;select exam_id, correct, total from exams where user_id = $userId&quot;</span>.<span class="fu">query</span>[ExamResult]</code></pre></div>
+<p>This is a <code>Query0</code> statement which means it’s not a <code>ConnectionIO</code> yet, to do that you can use combinators like <code>run</code>, <code>to[List]</code>, <code>stream</code>, <code>unique</code> or <code>option</code> to get the right shape out of your database. <code>ConnectionIO</code> is similar to <code>DBIO</code> (as seen from Slick). It allows you to compose <code>ConnectionIO</code> statements through a for comprehension. Executing these statements as a whole makes it a transaction.</p>
+<p>Another nice feature of Doobie is that you can check if the query type checks with your case class. In this example, it’s <code>ExamResult</code>.</p>
+<p>So <code>ExamResult</code> is defined as <code>case class ExamResult(id: String Refined ExamId, correct: Int, total: Int)</code>.</p>
+<p>With the <code>check</code> method which is included in the test harness of doobie you can verify the query is correct:</p>
+<pre><code>list
+  + Query0[ExamResult] defined at ExamRepository.scala:20
+
+      select exam_id, correct, total from exams where user_id = ?
+
+    + SQL Compiles and TypeChecks
+    + P01 UUID  →  OTHER (uuid)
+    + C01 exam_id VARCHAR (varchar) NOT NULL  →  String
+    + C02 correct INTEGER (int4)    NOT NULL  →  Int
+    + C03 total   INTEGER (int4)    NOT NULL  →  Int</code></pre>
+<p>Doobie is simple and works with any JDBC driver. This means you can start with an ordinary Postgres database and switch later to a CockroachDB, Citus, TimescaleDB or even Clickhouse database.</p>
+<h2 id="composability-of-transactional-statements">Composability of transactional statements</h2>
+<p>In a backend, you either work with in-memory data structures that need to be modified or data-structures inside a database. If you use a database like Postgres or MySQL multiple statements can be composed together to run in a transaction. A transaction is atomic, which means all the changes happen at once or not.</p>
+<h3 id="doobie-and-tagless-final">Doobie and tagless final</h3>
+<p>It’s a common practice to group methods that query the database in a <code>Repository</code>. A repository is an interface to query a certain group of coherent entities. A little example:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">trait</span> EventRepository[F[_]] {
+  <span class="kw">def</span> <span class="fu">allEvents</span>(offset: Long): Stream[F, AggregateEvent[Json]]
+  <span class="kw">def</span> <span class="fu">deleteStream</span>(aggregateId: UUID): F[Int]
+  <span class="kw">def</span> <span class="fu">getEventsByAggregateId</span>(aggregateId: UUID, fromSeqNumber: Option[Long] = None): Stream[F, Event[Json]]
+  <span class="kw">def</span> <span class="fu">insert</span>(aggregateId: UUID, lastSeqNumber: Long, events: NonEmptyList[Event[Json]]): F[Int]
+}</code></pre></div>
+<p>As you can see we have a tagless final interface for a repository. Why? Well, we want to implement <em>all</em> of our repositories in terms of <code>ConnectionIO</code> (same thing as <code>DBIO</code> in Slick) to either choose compose multiple statements into a transaction or run one single method. To do the latter we need to transform the complete interface. Luckily cats-tagless has some utilities for that:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">trait</span> FunctorK[A[_[_]]] {
+  <span class="kw">def</span> mapK[F[_], G[_]](af: A[F])(fk: F ~&gt; G): A[G]
+}</code></pre></div>
+<p>This may be daunting, but it’s not that hard. If you look at type <code>A[_[_]]</code> we can fit in <code>EventRepository[F[_]]</code>. So for parameter <code>af</code> we could use <code>EventRepository[ConnectionIO]</code>. This implies that <code>F</code> is <code>ConnectionIO</code>. To get values out of a <code>ConnectionIO</code> doobie has a method <code>trans</code> on <code>Transactor</code> (which is a natural transformation). This method looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">trans</span>(<span class="kw">implicit</span> ev: Monad[M]): ConnectionIO ~&gt; M</code></pre></div>
+<p>If we want <code>M</code> to be a ZIO <code>Task</code> we are game! The library <code>cats-tagless</code> offers a nifty macro which makes it easy to derive a <code>FunctorK</code> from a tagless final interface:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">val</span> functorK: FunctorK[EventRepository] = Derive.<span class="fu">functorK</span>[EventRepository]</code></pre></div>
+<p>I have a utility method which allows you to select a <code>ConnectionIO</code>repository and get back <code>Task</code> based version:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> pgRepo[K[_[_]]](f: PostgresRepos[ConnIO] =&gt; K[ConnIO])(<span class="kw">implicit</span> F: FunctorK[K]): K[Task] =
+    F.<span class="fu">mapK</span>(<span class="fu">f</span>(postgresRepos))(trans)</code></pre></div>
+<p>Which let you write something like this <code>env.pgRepo(_.users).findById(userId)</code>. The <code>PostgresRepos</code> is a case class that contains all the repositories based on <code>ConnectionIO</code>. Thanks to the <code>FunctorK</code> instance we can transform the <em>complete</em> algebra/interface to a <code>Task</code> based on.</p>
+<p>But what if you want to compose multiple transaction statements? I use this method:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> pgTransact[A](tx: Monad[ConnIO] =&gt; PostgresRepos[ConnIO] =&gt; ConnIO[A]): Task[A] =
+    <span class="fu">trans</span>(<span class="fu">tx</span>(monadConnIO)(postgresRepos))</code></pre></div>
+<p>And a little example here:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> deleteRows: Task[Unit] = env.<span class="fu">pgTransact</span> { <span class="kw">implicit</span> connIO =&gt; repos =&gt;
+    <span class="kw">for</span> {
+        _ &lt;- repos.<span class="fu">courierEvents</span>.<span class="fu">deleteStream</span>(userId.<span class="fu">repr</span>)
+        _ &lt;- repos.<span class="fu">courierTokens</span>.<span class="fu">delete</span>(userId)
+        _ &lt;- repos.<span class="fu">exams</span>.<span class="fu">delete</span>(userId)
+    } <span class="kw">yield</span> ()
+}</code></pre></div>
+<p>Et voila!</p>
+<h3 id="a-great-tool">A great tool</h3>
+<p>Tagless final works well with repositories, but can also work pretty well with other subsystems that work with data. This could be a REST or gRPC client interacting with a sub-system like Keycloak, Kubernetes, etc. You could also decorate your algebra with logging, caching, tracing or metrics. Or add timeouts and circuit breakers to all methods using a natural transformation.</p>
+<p>Using discipline to test your tagless final algebras is a great tool to write tests that are not bound to a specific database or API. It lets you write down the semantics/laws of your algebras and you plug it to test for example a <code>ConnectionIO</code> based implementation or your test implementation which uses ZIO <code>Task</code>. If you decide to move a repository over to Cassandra, it’s a matter of setting up your test harness to cope with Cassandra specific IO operations.</p>
+<h2 id="whats-next">What’s next?</h2>
+<p>I think functional programming can add a lot more stuff to Scala. Scala offers the power to write (Embedded Domain Specific Languages) EDSL’s like in Haskell. This means you embedded a micro-language in the host language itself. Such a language can describe data structures, but also HTTP/gRPC endpoints.</p>
+<p>There are projects like <code>formulation</code>, <code>skeuomorph</code> and <code>scalaz-schema</code> which describe data structures to derive Encoders and Decoders, but also Schema’s from data types. I think it’s good to have explicit mappings of your data-structures in your code as you will eventually have to think about migrating and back/forward compatibility.</p>
+<p>Projects like <code>endpoints</code>, <code>itinere</code> and <code>tapir</code> are there to describe HTTP endpoints. If you combine that with the projects from above you can remove the boilerplate of writing HTTP endpoints by hand as your business logic is mapped to these endpoints! You could see HTTP endpoints as encoders and decoders as well. With these endpoint libraries, you can derive a server, a client but also a Swagger/OpenAPI specification which can be offered to external consumers.</p>
+<p>I think having these tools is crucial to prevent problems with the compatibility of your data inside event logs or external consumers of your API.</p>
+
+  </div>
+
+</section>
+
+<section>
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4 text-center">
+      <h1 class="arrow">Written by</h1>
+      <div class="wp5 animated fadeInUp">
+        <img src="../img/mark.jpg" class="author-clip" alt="Mark de Jong" />
+        <h2>Mark de Jong</h2>
+        <p>Scala/Haskell Software Developer - Specialised in web-apps and high performance backend systems.</p>
+        <div class="social">
+          <ul class="social-buttons">
+            <li><a href="mailto:mark@vectos.net" class="social-btn"><i class="fa fa-envelope"></i></a></li>
+            <li><a target="_blank" href="https://www.linkedin.com/in/mark-de-jong-a808b7167" class="social-btn"><i class="fa fa-linkedin"></i></a></li>
+            <li><a target="_blank" href="https://twitter.com/mark_dj" class="social-btn"><i class="fa fa-twitter"></i></a></li>
+            <li><a target="_blank" href="https://github.com/Fristi" class="social-btn"><i class="fa fa-github"></i></a></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+</section>
+
+<section class="section-padding">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 text-center">
+      <a href="../" class="learn-more-btn">Back to the homepage</a>
+    </div>
+  </div>
+</section>
+
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="../js/waypoints.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/scripts.js"></script>
+        <script src="../js/jquery.flexslider.js"></script>
+        <script src="../js/modernizr.js"></script>
+      </body>
+    </html>

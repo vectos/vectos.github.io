@@ -39,14 +39,14 @@
     <div class="info">August 10, 2018</div>
 
     <h1 id="motivation-for-a-saga">Motivation for a <code>Saga</code></h1>
-<p>Imagine you want to book a trip which includes a car, hotel and a flight. If something cannot be booked, why would you bother going? If we would build this in Scala it would probably involve calling some external API’s. These API’s can go down, what happens if one of these API’s is down?</p>
+<p>Imagine you want to book a trip which includes a car, hotel, and a flight. If something cannot be booked, why would you bother going? If we would build this in Scala it would probably involve calling some external API’s. These API’s can go down, what happens if one of these API’s is down?</p>
 <div class="figure">
-<img src="../img/saga.png" alt="Saga: example of process which can fail, but takes failure in to account" />
-<p class="caption">Saga: example of process which can fail, but takes failure in to account</p>
+<img src="../img/saga.png" alt="Saga: example of a process which can fail, but takes failure into account" />
+<p class="caption">Saga: example of a process which can fail, but takes failure into account</p>
 </div>
-<p>You could use <code>recover</code> to execute a <em>compensating</em> action (a action which reverses the side-effect), but it will only work with <em>one</em> action. Of course you could apply this to all your actions, but this will get messy because you need to keep track of your compensating actions.</p>
-<h1 id="how-to-describe-that-in-a-nice-way">How to describe that in a nice way?</h1>
-<p>To describe a program which can handle failure you need to couple the outcome of a succesful action to it’s compensating action.</p>
+<p>You could use <code>recover</code> to execute a <em>compensating</em> action (an action which reverses the side-effect), but it will only work with <em>one</em> action. Of course, you could apply this to all your actions, but this will get messy because you need to keep track of your compensating actions.</p>
+<h1 id="how-to-describe-that-nicely">How to describe that nicely?</h1>
+<p>To describe a program that can handle failure you need to couple the outcome of a successful action to it’s compensating action.</p>
 <h2 id="a-short-example-of-a-saga-program">A short example of a <code>Saga</code> program</h2>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> cats.<span class="fu">effect</span>.<span class="fu">IO</span>
 <span class="kw">import</span> cats.<span class="fu">implicits</span>.<span class="fu">_</span>
@@ -65,27 +65,27 @@
   _ &lt;- <span class="fu">prg</span>(ref).<span class="fu">run</span>.<span class="fu">recoverWith</span> { <span class="kw">case</span> <span class="fu">NonFatal</span>(_) =&gt; IO.<span class="fu">unit</span> }
   current &lt;- ref.<span class="fu">get</span>
 } <span class="kw">yield</span> current</code></pre></div>
-<p>The outcome of main will be zero, as the <code>prg</code> will crash at the end. The first action will increase the <code>Ref[IO, Int]</code> to 500 and the second action by another 500, but since it crashes the compensating actions will roll it back to 0.</p>
+<p>The outcome of the main function will be zero, as the <code>prg</code> will crash at the end. The first action will increase the <code>Ref[IO, Int]</code> to 500 and the second action by another 500, but since it crashes the compensating actions will roll it back to 0.</p>
 <h2 id="the-importance-of-lazy-evaluation">The importance of lazy evaluation</h2>
-<p>The compensating action needs to be <em>description</em> of a action. A description means, that’s it is <em>not</em> executed immediately (lazy evaluation) and it may be a side-effect. This is called a computation in functional programming. The opposite of lazy evaluation is eager evaluation. An example of a type which is eager, is <code>Future</code> and <code>Try</code>.</p>
+<p>The compensating action needs to be <em>description</em> of an action. A description means, that’s it is <em>not</em> executed immediately (lazy evaluation) and it may be a side-effect. This is called a computation in functional programming. The opposite of lazy evaluation is eager evaluation. An example of a type which is eager is <code>Future</code> and <code>Try</code>.</p>
 <h2 id="couple-success-with-compensation">Couple success with compensation</h2>
 <p>In my <code>Saga</code> the signature of the a <em>recoverable</em> combinator is defined as:</p>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> recoverable[F[_] : Sync, A](comp: F[A])(rollback: A =&gt; F[Unit]): Saga[F, A]</code></pre></div>
-<p>The type class <code>Sync</code> constrain on <code>F[_]</code> is to enforce a type which supports lazy evaluation. The thing we need for our description of a <code>Saga</code>. The function it self takes two arguments, an actual <code>comp</code> (short for computation) which is the <em>do</em> action, and the rollback which uses the outcome of the <em>do</em> action to construct a rollback/compensating action.</p>
-<h3 id="saga-a-specialised-free-monad">Saga, a specialised <code>Free</code> Monad</h3>
+<p>The type class <code>Sync</code> constrain on <code>F[_]</code> is to enforce a type which supports lazy evaluation. The thing we need for our description of a <code>Saga</code>. The function itself takes two arguments, an actual <code>comp</code> (short for computation) which is the <em>do</em> action, and the rollback which uses the outcome of the <em>do</em> action to construct a rollback/compensating action.</p>
+<h3 id="saga-a-specialized-free-monad">Saga, a specialized <code>Free</code> Monad</h3>
 <p>As you can it returns a <code>Saga[F, A]</code>. A <code>Saga</code> itself is a description of several computations. In fact it’s a slightly altered variant of a Free Monad:</p>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> Pure[F[_], A](action: A) <span class="kw">extends</span> Saga[F, A]
 <span class="kw">case</span> <span class="kw">class</span> Next[F[_], A](action: F[A], compensate: A =&gt; F[Unit]) <span class="kw">extends</span> Saga[F, A]
 <span class="kw">case</span> <span class="kw">class</span> Bind[F[_], A, B](fa: Saga[F, A], f: A =&gt; Saga[F, B]) <span class="kw">extends</span> Saga[F, B]</code></pre></div>
-<p>The <code>Pure</code> and <code>Bind</code> are descriptions of operations which you’ll find on a <code>Monad</code> as well. The <code>Next</code> case however is not. This will store the parameters of the <code>recoverable</code> method as is for later evaluation.</p>
+<p>The <code>Pure</code> and <code>Bind</code> are descriptions of operations that you’ll find on a <code>Monad</code> as well. The <code>Next</code> case, however, is not. This will store the parameters of the <code>recoverable</code> method as is for later evaluation.</p>
 <p>This data is interpreted by the <code>decide</code> method on <code>Saga</code>, which looks like this:</p>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> decide[B](f: (A, List[F[Unit]]) =&gt; F[B]): F[B]</code></pre></div>
-<p>It will fold the description of computations as described in the <code>Saga</code> data type to a <code>F[B]</code>. If anything fails (due a <code>Sync.onError</code>) it will execute the compensating actions accumulated so far. If it succeeds, it will execute the <code>f: (A, List[F[Unit]] =&gt; F[B]</code> function. This function let you decide what to do with the out come of the computation. This is useful when you work with a <code>EitherT</code> or <code>OptionT</code>. The outcome may be <code>None</code> or <code>Left</code>. In that case you might want to rollback all the actions.</p>
+<p>It will fold the description of computations as described in the <code>Saga</code> data type to a <code>F[B]</code>. If anything fails (due a <code>Sync.onError</code>) it will execute the compensating actions accumulated so far. If it succeeds, it will execute the <code>f: (A, List[F[Unit]] =&gt; F[B]</code> function. This function lets you decide what to do with the outcome of the computation. This is useful when you work with an <code>EitherT</code> or <code>OptionT</code>. The outcome may be <code>None</code> or <code>Left</code>. In that case, you might want to rollback all the actions.</p>
 <p>You can also use the <code>run</code> variant on <code>Saga</code> which uses the <code>decide</code></p>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> run: F[A] = decide { <span class="kw">case</span> (a, _) =&gt; F.<span class="fu">pure</span>(a) }</code></pre></div>
 <h1 id="conclusion">Conclusion</h1>
-<p>As you can see <code>Saga</code> is useful tool when interacting with multiple API’s which are crossing an asynchronous boundary and might not offer transactional guarantees. It might not be the best solution, but in a lot of cases you don’t have a better choice I guess (welcome to the microservice/API era) !</p>
-<p>If you want to have a closer look how that’s done or have feedback. Have a look at the source code on <a href="https://github.com/vectos/goedverhaal">Github</a></p>
+<p>As you can see <code>Saga</code> is a useful tool when interacting with multiple API’s which are crossing an asynchronous boundary and might not offer transactional guarantees. It might not be the best solution, but in a lot of cases you don’t have a better choice I guess (welcome to the microservice/API era)!</p>
+<p>If you want to have a closer look at how that’s done or have feedback. Have a look at the source code on <a href="https://github.com/vectos/goedverhaal">Github</a></p>
 <p>Happy hacking!</p>
 
   </div>

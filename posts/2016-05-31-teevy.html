@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vectos - Building a REST/JSON webservice using a pure functional programming language</title>
+    <title>Vectos - Building a REST/JSON web service using a pure functional programming language</title>
     <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -35,53 +35,53 @@
 <section class="animated fadeInUp delay-05s blog-post">
 
   <div class="col-md-10 col-md-offset-1">
-    <h1 class="arrow">Building a REST/JSON webservice using a pure functional programming language</h1>
+    <h1 class="arrow">Building a REST/JSON web service using a pure functional programming language</h1>
     <div class="info">May 31, 2016</div>
 
-    <p>Two years ago I joined a few friends which were working on a little hobby project. We were creating a website which allowed you to track your watch progression of your favorite television series. The project was called <a href="https://teevy.co">Teevy</a> and is still online, but some parts of it might function a bit strange (no maintenance done to it lately).</p>
+    <p>Two years ago I joined a few friends who were working on a little hobby project. We were creating a website that allowed you to track the progression of your favorite television series. The project was called <a href="https://teevy.co">Teevy</a> and is still online, but some parts of it might function a bit strange (no maintenance is done to it lately).</p>
 <div class="figure">
 <img src="../img/teevy/teevy_webapp.png" alt="A logged in user at teevy.co" />
 <p class="caption">A logged in user at teevy.co</p>
 </div>
 <p>The goal was to develop a Minimal Viable Product (MVP) first. We had no real business model for it, we were just passionate about what we do and this was just a hobby project for us to try new things.</p>
-<p>In the next few minutes I want to tell you about my journey creating a REST/JSON backend for Teevy with a pure functional programming language called Haskell.</p>
+<p>In the next few minutes, I want to tell you about my journey creating a REST/JSON backend for Teevy with a pure functional programming language called Haskell.</p>
 <h2 id="haskell-a-pure-functional-programming-language">Haskell, a pure functional programming language</h2>
-<p>Haskell you say? Yes, Haskell. I didn’t know that much Haskell at that time. I read some books about it, and I just wanted to give it a go and <em>learn</em> it by applying it. So what are some nice properties of functional programming and Haskell?</p>
+<p>Haskell, you say? Yes, Haskell. I didn’t know that much Haskell at that time. I read some books about it, and I just wanted to give it a go and <em>learn</em> it by applying it. So what are some nice properties of functional programming and Haskell?</p>
 <h3 id="types">Types</h3>
-<p>Types are a important recipe for Haskell and functional programming. They allow us to exactly capture what a function should accept as input and will give as output. They also describe how data structures look like.</p>
-<p>Types can assure you that you are using the right shapes. This is in fact some sort of test. In fact some languages remove the need for a lot tests by using really expressive types (for example: vectors and matrices which have their dimensions included in the type). Also typing makes refactoring a lot easier, since the compiler will tell you when you are using the wrong shape.</p>
-<p>Opposed to dynamic languages which will let you know that you’ve made an ‘oopsie’ at runtime. To cover that usually a lot of tests are written (which also need to be refactored after a refactor) to avoid such oopsies.</p>
+<p>Types are an important recipe for Haskell and functional programming. They allow us to exactly capture what a function should accept as input and will give as output. They also describe how data structures look like.</p>
+<p>Types can assure you that you are using the right shapes. This is, in fact, some sort of test. Some languages remove the need for a lot of tests by using expressive types (for example vectors and matrices which have their dimensions included in the type). Also, typing makes refactoring a lot easier, since the compiler will tell you when you are using the wrong shape.</p>
+<p>Opposed to dynamic languages which will let you know that you’ve made an error at runtime. To cover that usually, a lot of tests are written (which also need to be refactored after a refactoring) to avoid such errors.</p>
 <h3 id="side-effects">Side effects</h3>
-<p>In a pure functional programming all (side) effects are captured and are handled explicitly. Examples of effects are optional values (Option/Maybe), asynchronous values (IO/Future/Task), disjunction values (Either), concurrent values (STM), modification of values, etc.</p>
-<p>The advantage is that you will handle all effects explicitly and therefore it reduces the risk of having a bug in your program. A well known problem with a C# and Java programs is having the null pointer exception at runtime in your program. In that case the program references to a unset reference in memory, causing the program to terminate. This might be okay if you have set up a exception handler, but mapping this error to a good human readable error requires you rethrow exceptions and write lots of boilerplate. And what if you have two or more potential null cases in your program? Yes, it will be a mess. Also these functions which do not handle these side effects explicitly do not compose.</p>
-<p>What do I mean by this? Programs <strong>without</strong> explicit side effects can do things in between which might not give the same outcome every time. A pure expression like <code>1 + 1</code> will output <code>2</code> every time. In other words create programs which are a bunch of expressions instead of a bunch of statements. Expressions compose!</p>
+<p>In pure functional programming, all (side) effects are captured and are handled explicitly. Examples of effects are optional values (Option/Maybe), asynchronous values (IO/Future/Task), disjunction values (Either), concurrent values (STM), modification of values, etc.</p>
+<p>The advantage is that you will handle all effects explicitly and therefore it reduces the risk of having a bug in your program. A well-known problem with a C# and Java programs is having the null pointer exception at runtime in your program. In that case, the program references to an unset reference in memory, causing the program to terminate. This might be okay if you have set up an exception handler, but mapping this error to a good human-readable error requires you rethrow exceptions and write lots of boilerplate. And what if you have two or more potential null cases in your program? Yes, it will be a mess. Also, these functions which do not handle these side effects explicitly do not compose.</p>
+<p>What do I mean by this? Programs <strong>without</strong> explicit side effects can do things in between which might not give the same outcome every time. A pure expression like <code>1 + 1</code> will output <code>2</code> every time. In other words, create programs that are a bunch of expressions instead of a bunch of statements. Expressions compose!</p>
 <h3 id="type-classes">Type classes</h3>
-<p>A type class is a common structure, like a interface. But it is ad-hoc (that’s why we call it a type class instance) and can abstract over high-kinded types (<code>Maybe a</code> is a higher kinded type, it takes one type parameter to create a fully constructed type).</p>
-<p>The most well known type classes in Haskell and functional programming are: Functor, Monoid, Monad, Applicative, etc.</p>
-<p>For example we can have a Functor (which offers a map function) instance for a optional value and asynchronous values.</p>
+<p>A type class is a common structure, like an interface. But it is ad-hoc (that’s why we call it a type class instance) and can abstract over high-kinded types (<code>Maybe a</code> is a higher kinded type, it takes one type parameter to create a fully constructed type).</p>
+<p>The most well-known type classes in Haskell and functional programming are Functor, Monoid, Monad, Applicative, etc.</p>
+<p>For example, we can have a Functor (which offers a map function) instance for an optional value and asynchronous values.</p>
 <h3 id="composition-composition-and-composition">Composition, composition and composition</h3>
-<p>Every where you look in functional programming, you will see <strong>composition</strong>. Functions compose, functors compose, applicatives compose, lenses compose, natural transformations compose, contravariant functors compose, etc. When you dig deeper you’ll see it everywhere. In the end, when we are programming we decompose problems in small parts and compose them together to form a program.</p>
+<p>Everywhere you look in functional programming, you will see <strong>composition</strong>. Functions compose, functors compose, applicatives compose, lenses compose, natural transformations compose, contravariant functors compose, etc. When you dig deeper you’ll see it everywhere. In the end, when we are programming we decompose problems in small parts and compose them together to form a program.</p>
 <h3 id="the-ecosystem">The ecosystem</h3>
-<p>Almost all libraries written in Haskell can be found on <a href="http://hackage.haskell.org/">hackage</a>. Ranging from database drivers, web servers, parser libaries to numerical computing. Also the documentation of any library is very easy to comprehend. Some libraries I’ve used for Teevy are:</p>
+<p>Almost all libraries written in Haskell can be found on <a href="http://hackage.haskell.org/">hackage</a>. Ranging from database drivers, web servers, parser libraries to numerical computing. Also, the documentation of any library is very easy to comprehend. Some libraries I’ve used for Teevy are:</p>
 <ul>
 <li>Aeson: JSON encoding/decoding</li>
 <li>Postgresql-simple: Database access</li>
 <li>Scotty: Sinatra-like web framework</li>
 <li>Configurator: For loading configuration</li>
-<li>JWT: Json Web Tokens for authentication</li>
+<li>JWT: JSON Web Tokens for authentication</li>
 </ul>
 <p>You can use cabal to install these packages, which I did back then. Nowadays you would use something like stack to manage your build (which uses cabal underneath).</p>
-<h2 id="creating-a-webservice">Creating a webservice</h2>
-<p>So what do we need to build a <em>simple</em> webservice?</p>
+<h2 id="creating-a-web-service">Creating a web service</h2>
+<p>So what do we need to build a <em>simple</em> web service?</p>
 <ul>
-<li>Webserver</li>
+<li>Web server</li>
 <li>JSON encoding/decoding</li>
 <li>Database access</li>
 <li>Loading a configuration file</li>
 </ul>
 <p>Let’s start with the data part.</p>
 <h3 id="dealing-with-data">Dealing with data</h3>
-<p>To create a webservice, you’ll need to define data types and create type class instances which can:</p>
+<p>To create a web service, you’ll need to define data types and create type class instances which can:</p>
 <ul>
 <li>Encode/decode JSON</li>
 <li>Persist these types to database</li>
@@ -91,7 +91,7 @@
 <p>Let’s pretend we are dealing with a user, just to keep things simple. Here’s the definition of the user data record.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">User</span> <span class="fu">=</span> <span class="dt">User</span> {<span class="ot"> name ::</span> <span class="dt">String</span>,<span class="ot"> fileQuota ::</span> <span class="dt">Int</span> }</code></pre></div>
 <h4 id="json">JSON</h4>
-<p>I’ve used the <a href="https://hackage.haskell.org/package/aeson">aeson</a> library to work with JSON. An example of a JSON decoder typeclass instance for a user looks like this (if you write it out by hand).</p>
+<p>I’ve used the <a href="https://hackage.haskell.org/package/aeson">aeson</a> library to work with JSON. An example of a JSON decoder type class instance for a user looks like this (if you write it out by hand).</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">User</span> <span class="kw">where</span>
     parseJSON (<span class="dt">Object</span> v) <span class="fu">=</span> <span class="dt">User</span> <span class="fu">&lt;$&gt;</span>
                            v <span class="fu">.:</span> <span class="st">&quot;name&quot;</span> <span class="fu">&lt;*&gt;</span>
@@ -100,14 +100,14 @@
     parseJSON _          <span class="fu">=</span> empty</code></pre></div>
 <p>The symbols <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code> are just functions. I won’t go much into detail, but these functions are related to Functor and Applicative constructs in functional programming. Aeson and Haskell can automatically derive the type class instance for the type <code>User</code>. Removing the need to write this boilerplate. Something like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">User</span></code></pre></div>
-<p>Finally we can use a <code>decode</code> function defined as <code>decode :: FromJSON a =&gt; ByteString -&gt; Maybe a</code>. As you can see the generic parameter <code>a</code> requires you to have typeclass instance in scope of <code>FromJSON</code>. If that’s the case, it will take <code>ByteString</code> and converts it into a optional value <code>Maybe a</code>.</p>
-<p>This a great example of typeclasses (decoder typeclass) and explicit effects (returning a optional value).</p>
+<p>Finally we can use a <code>decode</code> function defined as <code>decode :: FromJSON a =&gt; ByteString -&gt; Maybe a</code>. As you can see the generic parameter <code>a</code> requires you to have type class instance in scope of <code>FromJSON</code>. If that’s the case, it will take <code>ByteString</code> and converts it into an optional value <code>Maybe a</code>.</p>
+<p>This a great example of type classes (decoder type class) and explicit effects (returning an optional value).</p>
 <h4 id="database">Database</h4>
-<p>We can also do the typeclass stuff for database access (using <a href="https://hackage.haskell.org/package/postgresql-simple">postgres-simple</a>). Like this:</p>
+<p>We can also do the type class stuff for database access (using <a href="https://hackage.haskell.org/package/postgresql-simple">postgres-simple</a>). Like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">FromRow</span> <span class="dt">User</span> <span class="kw">where</span>
     fromRow <span class="fu">=</span> <span class="dt">User</span> <span class="fu">&lt;$&gt;</span> field <span class="fu">&lt;*&gt;</span> field</code></pre></div>
 <p>The <code>FromRow</code> type class will extract columns from a result set and put them into a record. Selecting the right fields and the order of the fields in the query is important!</p>
-<p>By supplying a instance of <code>FromRow</code> for the type <code>User</code> we can use it with <code>query_ :: FromRow r =&gt; Connection -&gt; Query -&gt; IO [r]</code>. As you can see it requires a <code>FromRow</code> type class instance again for <code>r</code>. If that’s settled, we can supply a <code>Connection</code> and <code>Query</code>. It will give us back a <code>IO [r]</code> which is a list of <code>r</code> values.</p>
+<p>By supplying a instance of <code>FromRow</code> for the type <code>User</code> we can use it with <code>query_ :: FromRow r =&gt; Connection -&gt; Query -&gt; IO [r]</code>. As you can see it requires a <code>FromRow</code> type class instance again for <code>r</code>. If that’s settled, we can supply a <code>Connection</code> and <code>Query</code>. It will give us back an <code>IO [r]</code> which is a list of <code>r</code> values.</p>
 <p>Using this we can query the database. Like so:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">allUsers ::</span> <span class="dt">Connection</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">User</span>]
 allUsers conn <span class="fu">=</span> query_ conn <span class="st">&quot;select * from user&quot;</span></code></pre></div>
@@ -124,8 +124,8 @@ main <span class="fu">=</span> scotty <span class="dv">3000</span> <span class="
     beam <span class="ot">&lt;-</span> param <span class="st">&quot;word&quot;</span>
     html <span class="fu">$</span> mconcat [<span class="st">&quot;&lt;h1&gt;Scotty, &quot;</span>, beam, <span class="st">&quot; me up!&lt;/h1&gt;&quot;</span>]</code></pre></div>
 <p>This will host a scotty server at port 3000. When you enter <code>localhost:3000/mark</code> it will print you <code>&quot;&lt;h1&gt;Scotty, mark me up!&lt;/h1&gt;&quot;</code></p>
-<p>Quite simple huh? (except the monoid stuff if you haven’t seen it, but its just concat stuff really (with some laws)). In a few lines of code we’ve created a webservice, how cool is that? :)</p>
-<p>To output JSON we can use <code>json :: ToJSON a =&gt; a -&gt; ActionM ()</code> instead of <code>html</code>. As you can see we need to have a <code>ToJSON</code> (encoder) type class instance in scope which is the opposite of <code>FromJSON</code> (decoder). I won’t go into detail, but you can make a instance by using <code>instance ToJSON User</code>. For example you could write <code>json fetchedUsers</code> where <code>fetchedUsers :: [User]</code> should return a array of users.</p>
+<p>Quite simple huh? (except the monoid stuff if you haven’t seen it, but its just concat stuff really (with some laws)). In a few lines of code we’ve created a web service, how cool is that? :)</p>
+<p>To output JSON we can use <code>json :: ToJSON a =&gt; a -&gt; ActionM ()</code> instead of <code>html</code>. As you can see we need to have a <code>ToJSON</code> (encoder) type class instance in scope which is the opposite of <code>FromJSON</code> (decoder). I won’t go into detail, but you can make an instance by using <code>instance ToJSON User</code>. For example, you could write <code>json fetchedUsers</code> where <code>fetchedUsers :: [User]</code> should return an array of users.</p>
 <h3 id="config-parsing">Config parsing</h3>
 <p>Every website nowadays has some configuration file which contains database connection strings, Facebook secrets, settings, etc. Haskell has a nice library to work with config files called: <a href="https://hackage.haskell.org/package/configurator">configurator</a></p>
 <p>In the example below we load the properties using the configurator library:</p>
@@ -163,7 +163,7 @@ loadConfig path <span class="fu">=</span> <span class="kw">do</span>
   <span class="kw">else</span> return <span class="dt">Nothing</span></code></pre></div>
 <p>The takeaways here once again: simple functions, declarative parsing of the different sections and taking failure into account.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>It’s been two years ago since I’ve built Teevy. During these past two years I’ve learned a lot and some stuff can be greatly simplified or improved. Looking back at it, I am quite satisfied with what I have achieved. I learned a tremendous amount and I’ve created a nice MVP :) The source code can be found <a href="https://github.com/Fristi/teevyapp">here</a></p>
+<p>It’s been two years ago since I’ve built Teevy. During these past two years, I’ve learned a lot and some stuff can be greatly simplified or improved. Looking back at it, I am quite satisfied with what I have achieved. I learned a tremendous amount and I’ve created a nice MVP :) The source code can be found <a href="https://github.com/Fristi/teevyapp">here</a></p>
 <p>It also proves that you can write REST backends with Haskell. Many other people have done it and they also like the advantages of it. Some complementary work can be found at:</p>
 <ul>
 <li><a href="http://adit.io/posts/2013-04-15-making-a-website-with-haskell.html">Making a website in Haskell</a></li>
