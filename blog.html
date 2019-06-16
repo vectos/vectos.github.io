@@ -1,0 +1,17 @@
+<section>
+<div class="container mx-auto py-4 px-4">
+      <div>
+        <h1 class="arrow text-center">Blog</h1>
+        <ul>
+            $for(posts)$
+                <li class="pb-4">
+                    <p class="link">
+                      <p><a class="font-extrabold text-teal-600" href="$url$">$title$</a> <span class="text-gray-500 text-xs">$date$</span></p>
+                      <p class="text-gray-600">$intro$</p>
+                    </p>
+                </li>
+            $endfor$
+        </ul>
+      </div>
+    </div>
+</section>
