@@ -1,18 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="antialiased">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Vectos - Saga, compensate for failures in a terse and composable way</title>
-    <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="../css/flexslider.css" rel="stylesheet">
-    <link href="../css/styles.css" rel="stylesheet">
-    <link href="../css/queries.css" rel="stylesheet">
+    <link href="../css/site.css" rel="stylesheet">
     <link href="../css/syntax.css" rel="stylesheet">
-    <link href="../css/animate.css" rel="stylesheet">
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -20,25 +14,40 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
       </head>
-      <body id="top">
+      <body id="top" class="border-t-8 border-teal-600">
 
-        <header class="blog-header">
-  <section>
-    <div class="container text-center">
-      <div class="row animated fadeInDown delay-01s">
-        <a href="../" alt="Back to the homepage"><img src="../img/logo.png" /></a>
-      </div>
-    </div>
-  </section>
-</header>
+        
+        <div class="sticky top-0 bg-white p-3">
 
-<section class="animated fadeInUp delay-05s blog-post">
+
+            <div class="container mx-auto flex justify-between ">
+            <div>
+                <img class="ml-4" src="../img/logo.png" />
+            </div>
+
+            <div>
+                <ul class="flex flex-row">
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="../index.html">Home</a></li>
+
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="../blog.html">Blog</a></li>
+
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="mailto:mark@vectos.net">Contact</a></li>
+
+                </ul>
+            </div>
+            </div>
+
+        </div>
+
+        <div>
+        <div class="container mx-auto">
+
+<section class="px-4 py-4">
 
   <div class="col-md-10 col-md-offset-1">
-    <h1 class="arrow">Saga, compensate for failures in a terse and composable way</h1>
-    <div class="info">August 10, 2018</div>
+    <p><span class="text-xl font-extrabold uppercase tracking-wider text-teal-600">Saga, compensate for failures in a terse and composable way</span> <span class="text-xs text-gray-600">August 10, 2018</span></span></p>
 
-    <h1 id="motivation-for-a-saga">Motivation for a <code>Saga</code></h1>
+    <div class="blog-post"><h1 id="motivation-for-a-saga">Motivation for a <code>Saga</code></h1>
 <p>Imagine you want to book a trip which includes a car, hotel, and a flight. If something cannot be booked, why would you bother going? If we would build this in Scala it would probably involve calling some external API’s. These API’s can go down, what happens if one of these API’s is down?</p>
 <div class="figure">
 <img src="../img/saga.png" alt="Saga: example of a process which can fail, but takes failure into account" />
@@ -86,52 +95,78 @@
 <h1 id="conclusion">Conclusion</h1>
 <p>As you can see <code>Saga</code> is a useful tool when interacting with multiple API’s which are crossing an asynchronous boundary and might not offer transactional guarantees. It might not be the best solution, but in a lot of cases you don’t have a better choice I guess (welcome to the microservice/API era)!</p>
 <p>If you want to have a closer look at how that’s done or have feedback. Have a look at the source code on <a href="https://github.com/vectos/goedverhaal">Github</a></p>
-<p>Happy hacking!</p>
+<p>Happy hacking!</p></div>
 
   </div>
 
 </section>
 
 <section>
-  <div class="row">
-    <div class="col-md-4 col-md-offset-4 text-center">
-      <h1 class="arrow">Written by</h1>
-      <div class="wp5 animated fadeInUp">
-        <img src="../img/mark.jpg" class="author-clip" alt="Mark de Jong" />
-        <h2>Mark de Jong</h2>
-        <p>Scala/Haskell Software Developer - Specialised in web-apps and high performance backend systems.</p>
-        <div class="social">
-          <ul class="social-buttons">
-            <li><a href="mailto:mark@vectos.net" class="social-btn"><i class="fa fa-envelope"></i></a></li>
-            <li><a target="_blank" href="https://www.linkedin.com/in/mark-de-jong-a808b7167" class="social-btn"><i class="fa fa-linkedin"></i></a></li>
-            <li><a target="_blank" href="https://twitter.com/mark_dj" class="social-btn"><i class="fa fa-twitter"></i></a></li>
-            <li><a target="_blank" href="https://github.com/Fristi" class="social-btn"><i class="fa fa-github"></i></a></li>
-          </ul>
+  <div class="mb-5">
+    <div class="mx-5 my-5">
+        
+
+        <div class="flex items-center">
+          <img src="../img/mark.jpg" class="rounded-full" alt="Mark de Jong" />
+          <div class="ml-4">
+            <h2 class="font-semibold text-gray-700">Mark de Jong</h2>
+            <p class="text-xs text-gray-600">Software consultant</p>
+
+            <ul class="mt-2 social-buttons">
+                <li><a href="mailto:mark@vectos.net" class="social-btn"><i class="fa fa-envelope"></i></a></li>
+                <li><a target="_blank" href="https://www.linkedin.com/in/mark-de-jong-a808b7167" class="social-btn"><i class="fa fa-linkedin"></i></a></li>
+                <li><a target="_blank" href="https://twitter.com/mark_dj" class="social-btn"><i class="fa fa-twitter"></i></a></li>
+                <li><a target="_blank" href="https://github.com/Fristi" class="social-btn"><i class="fa fa-github"></i></a></li>
+                </ul>
+          </div>
         </div>
+
+       
+    </div>
+  </div>
+
+
+</section>
+</div>
+        </div>
+
+        <!-- <div id="footer">
+<section class="section-padding" id="technologies">
+  <div class="container text-center">
+    <div class="row">
+      <h1 class="arrow">Technologies</h1>
+      <ul id="tech">
+          <li><img src="/img/tech/scala.png" /></li>
+          <li><img src="/img/tech/haskell.png" /></li>
+          <li><img src="/img/tech/postgresql.png" /></li>
+          <li><img src="/img/tech/elasticsearch.png" /></li>
+          <li><img src="/img/tech/react.png" /></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="dark-bg text-center section-padding contact-wrap" id="contact">
+  <a href="#top" class="up-btn"><i class="fa fa-chevron-up"></i></a>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="arrow">Where can you find Vectos?</h1>
       </div>
-
+    </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <ul class="social-buttons">
+          <li><a href="https://twitter.com/VectosSoftware" class="social-btn" target="_blank"><i class="fa fa-twitter"></i></a></li>
+          <li><a href="https://github.com/Vectos" class="social-btn" target="_blank"><i class="fa fa-github"></i></a></li>
+        </ul>
+      </div>
     </div>
   </div>
-
-
 </section>
 
-<section class="section-padding">
-  <div class="row">
-    <div class="col-md-6 col-md-offset-3 text-center">
-      <a href="../" class="learn-more-btn">Back to the homepage</a>
-    </div>
-  </div>
-</section>
+        </div> -->
 
-
-        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-        <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="../js/waypoints.min.js"></script>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/scripts.js"></script>
-        <script src="../js/jquery.flexslider.js"></script>
-        <script src="../js/modernizr.js"></script>
       </body>
     </html>

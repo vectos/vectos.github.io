@@ -1,18 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="antialiased">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Vectos - Teevy.co</title>
-    <link href="http://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" type="text/css">
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="../css/flexslider.css" rel="stylesheet">
-    <link href="../css/styles.css" rel="stylesheet">
-    <link href="../css/queries.css" rel="stylesheet">
+    <link href="../css/site.css" rel="stylesheet">
     <link href="../css/syntax.css" rel="stylesheet">
-    <link href="../css/animate.css" rel="stylesheet">
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -20,8 +14,32 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
       </head>
-      <body id="top">
+      <body id="top" class="border-t-8 border-teal-600">
 
+        
+        <div class="sticky top-0 bg-white p-3">
+
+
+            <div class="container mx-auto flex justify-between ">
+            <div>
+                <img class="ml-4" src="../img/logo.png" />
+            </div>
+
+            <div>
+                <ul class="flex flex-row">
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="../index.html">Home</a></li>
+
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="../blog.html">Blog</a></li>
+
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="mailto:mark@vectos.net">Contact</a></li>
+
+                </ul>
+            </div>
+            </div>
+
+        </div>
+
+        <div>
         <header class="blog-header">
   <section>
     <div class="container text-center">
@@ -51,14 +69,45 @@
   </div>
 </section>
 
+        </div>
 
-        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-        <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="../js/waypoints.min.js"></script>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/scripts.js"></script>
-        <script src="../js/jquery.flexslider.js"></script>
-        <script src="../js/modernizr.js"></script>
+        <!-- <div id="footer">
+<section class="section-padding" id="technologies">
+  <div class="container text-center">
+    <div class="row">
+      <h1 class="arrow">Technologies</h1>
+      <ul id="tech">
+          <li><img src="/img/tech/scala.png" /></li>
+          <li><img src="/img/tech/haskell.png" /></li>
+          <li><img src="/img/tech/postgresql.png" /></li>
+          <li><img src="/img/tech/elasticsearch.png" /></li>
+          <li><img src="/img/tech/react.png" /></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="dark-bg text-center section-padding contact-wrap" id="contact">
+  <a href="#top" class="up-btn"><i class="fa fa-chevron-up"></i></a>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="arrow">Where can you find Vectos?</h1>
+      </div>
+    </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <ul class="social-buttons">
+          <li><a href="https://twitter.com/VectosSoftware" class="social-btn" target="_blank"><i class="fa fa-twitter"></i></a></li>
+          <li><a href="https://github.com/Vectos" class="social-btn" target="_blank"><i class="fa fa-github"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+        </div> -->
+
       </body>
     </html>
