@@ -3,7 +3,6 @@ title: "A functional ecosystem"
 intro: "At DHL I built a microservice using cats, cats-effect, cats-tagless, refined, doobie, http4s and ZIO"
 author: "mark"
 ---
-# A functional ecosystem
 
 In this post I would like to go over some of the tech I used to build a new micro-service at DHL and why these technologies and methodologies could be interesting as well for you. I had the freedom to pick new technologies. I would like to thank DHL Netherlands to give me this opportunity.
 
@@ -65,7 +64,6 @@ So `ExamResult` is defined as `case class ExamResult(id: String Refined ExamId, 
 With the `check` method which is included in the test harness of doobie you can verify the query is correct:
 
 ```
-list
   + Query0[ExamResult] defined at ExamRepository.scala:20
 
       select exam_id, correct, total from exams where user_id = ?

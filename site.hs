@@ -38,14 +38,24 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
 
-    match "index.html" $ do
+
+    create ["blog.html"] $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
-            portfolio <- loadAll "portfolio/*"
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
-                    listField "portfolio" postCtx (return portfolio) `mappend`
+                    defaultContext
+
+            getResourceBody
+                >>= applyAsTemplate indexCtx
+                >>= loadAndApplyTemplate "templates/default.html" indexCtx
+                >>= relativizeUrls
+
+    create ["index.html"] $ do
+        route idRoute
+        compile $ do
+            let indexCtx =
                     constField "title" "Home"                `mappend`
                     defaultContext
 

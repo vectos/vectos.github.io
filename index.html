@@ -3,219 +3,85 @@ title: Home
 ---
 
 <header id="home">
-  <section class="hero" id="hero">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-8 col-md-offset-2 text-center inner">
-          <h1 class="animated fadeInDown"><img src="img/logo.png" /></h1>
-          <p class="animated fadeInUp delay-05s">Software consultancy<br />Specialised in functional programming, web apps and high performance backend systems</p>
-          <a href="#services" class="learn-more-btn">Find out more</a>
+  <section>
+    <div class="hero">
+      <div>
+        <div class="mx-auto text-center mt-32">
+          <h3 class="text-center text-3xl uppercase font-extrabold tracking-tighter">Software consultancy</h3>
+          <p class="text-center italic text-gray-600">Specialised in apps and backend systems</p>
+
+
+          <!-- <button type="button" class="bg-teal-500 mt-16 hover:bg-teal-400 text-white font-bold py-2 px-4 border-b-4 border-teal-700 hover:border-teal-500 rounded">Find out more</button> -->
+
         </div>
-
       </div>
-
     </div>
   </section>
 </header>
-<section class="features text-center section-padding" id="services">
-  <div class="container">
-    <div class="row">
+<div class="container mx-auto mt-16">
 
-      <h1 class="arrow">What can Vectos do for you?</h1>
+<div class="flex items-center mb-16">
+    <img width="500px" src="/img/svg/apps.svg" />
 
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/Webapps.png" alt="">
+    <div class="ml-8">
+      <h2 class="text-2xl font-semibold">Apps</h2>
+      <p class="text-gray-600 leading-loose">Want a responsive web app like Facebook or Soundcloud? Vectos builds single page web applications which makes users love your app. And all that according to the latest standards and beyond.</p>
+    </div>
+</div>
+
+<div class="flex items-center mb-16">
+  
+  <div class="caption">
+    <h2 class="text-2xl font-semibold">Domain modelling</h2>
+    <p class="text-gray-600 leading-loose">Keep it simple and clear as possible, that’s the goal. Vectos has mastered different techniques like: Domain Driven Design, functional programming, event sourcing, relational data modelling, et cetera.</p>
+  </div>
+
+  <img src="/img/svg/modelling.svg" />
+</div>
+
+<div class="flex items-center mb-16">
+  <img width="500px" src="/img/svg/performance.svg" />
 
     <div class="caption">
-      <h2>Web apps</h2>
-      <p>Want a responsive web app like Facebook or Soundcloud? Vectos builds single page web applications which makes users love your app. And all that according to the latest standards and beyond.</p>
+      <h2 class="text-2xl font-semibold">High performance</h2>
+      <p class="text-gray-600 leading-loose">Does your (backend) system have extremely high performance requirements? Want to know how to architect such a thing? Let's talk about that!</p>
     </div>
-  </div>
 </div>
 
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/DomainModel.png" alt="">
+<div class="flex items-center mb-16">
+    <div class="caption">
+      <h2 class="text-2xl font-semibold">Proof of concepts</h2>
+      <p class="text-gray-600 leading-loose">Do you want a different view on things? Vectos can help you out to make a Minimal Viable Product (MVP). This will be mainly focussed on the technical advantages and possibilities. If it’s a success, Vectos can help extend the MVP further.</p>
+    </div>
+    <img class="float-right" width="500px" height="300px" src="/img/svg/poc.svg" />
+</div>
+
+<div class="flex items-center mb-16">
+  <img width="500px" src="/img/svg/research.svg" />
 
     <div class="caption">
-      <h2>Domain modelling</h2>
-      <p>Keep it simple and clear as possible, that’s the goal. Vectos has mastered different techniques like: Domain Driven Design, functional programming, event sourcing, relational data modelling, et cetera.</p>
+      <h2 class="text-2xl font-semibold">Research and development</h2>
+      <p class="text-gray-600 leading-loose">Need a pair of hands to tackle a unsolved problem? Vectos has build some open source libraries and is up to date with the latest techniques and possibilities.</p>
     </div>
+</div>
+
+<div class="flex items-center mb-16">
+  <div class="caption">
+    <h2 class="text-2xl font-semibold">Machine learning</h2>
+    <p class="text-gray-600 leading-loose">Do you want to predict or classify something? Or would you like a recommendation system, anamoly detection or object recognization? Let’s have a chat and see what’s possible!</p>
+  </div>
+  <img width="500px" height="300px" src="/img/svg/math.svg" />
+</div>
+
+<div class="flex items-center mb-16">
+  <img width="500px" height="300px" src="/img/svg/workshop.svg" />
+
+  <div class="caption">
+    <h2 class="text-2xl font-semibold">Workshops</h2>
+    <p class="text-gray-600 leading-loose">Want to learn about Scala, Akka, Play, Spray, Functional Programming, Haskell, et cetera? Vectos can arrange a workshop for you to bring you up to speed!</p>
   </div>
 </div>
 
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/Performance.png" alt="">
-
-    <div class="caption">
-      <h2>High performance</h2>
-      <p>Does your (backend) system have extremely high performance requirements? Want to know how to architect such a thing? Let's talk about that!</p>
-    </div>
-  </div>
-</div>
-
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/PoC.png" alt="">
-
-    <div class="caption">
-      <h2>Proof of concepts</h2>
-      <p>Do you want a different view on things? Vectos can help you out to make a Minimal Viable Product (MVP). This will be mainly focussed on the technical advantages and possibilities. If it’s a success, Vectos can help extend the MVP further.</p>
-    </div>
-  </div>
-</div>
-
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/R&amp;D.png" alt="">
-
-    <div class="caption">
-      <h2>Research and development</h2>
-      <p>Need a pair of hands to tackle a unsolved problem? Vectos has build some open source libraries and is up to date with the latest techniques and possibilities.</p>
-    </div>
-  </div>
-</div>
-
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/MachineLearning.png" alt="">
-
-    <div class="caption">
-      <h2>Machine learning</h2>
-      <p>Do you want to predict or classify something? Or would you like a recommendation system, anamoly detection or object recognization? Let’s have a chat and see what’s possible!</p>
-    </div>
-  </div>
-</div>
-
-<div class="col-md-3">
-  <div class="thumbnail">
-    <img src="img/circles/Workshops.png" alt="">
-
-    <div class="caption">
-      <h2>Workshops</h2>
-      <p>Want to learn about Scala, Akka, Play, Spray, Functional Programming, Haskell, et cetera? Vectos can arrange a workshop for you to bring you up to speed!</p>
-    </div>
-  </div>
 </div>
 
 
-</div>
-  </div>
-</section>
-
-<section class="dark-bg portfolio text-center section-padding" id="portfolio">
-  <h1 class="arrow">Portfolio</h1>
-  <div class="container">
-    <div class="row">
-      <div id="portfolioSlider">
-        <ul class="slides">
-          $for(portfolio)$
-          <li>
-            <div class="col-md-4 wp4">
-              <a href="$external_url$">
-                <img src="$image_call$" alt="$title$">
-                <h2>$title$</h2>
-              </a>
-              <p>$short_description$</p>
-            </div>
-          </li>
-          $endfor$
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="subscribe text-center">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h1><i class="fa fa-paper-plane"></i><span>Want to talk? Let's have a coffee!</span></h1>
-          <a href="mailto:mark@vectos.net" class="ignite-btn">Contact Vectos</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-
-<section class="dark-bg section-padding blog-links" id="blog">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <h1 class="arrow text-center">Blog</h1>
-        <ul>
-            $for(posts)$
-                <li>
-                    <p class="link">
-                      <a class="title" href="$url$">$title$</a> - <span class="soft">$date$</span>
-                      <br/>
-                      $intro$
-                    </p>
-                </li>
-            $endfor$
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-padding" id="technologies">
-  <div class="container text-center">
-    <div class="row">
-      <h1 class="arrow">Technologies</h1>
-      <ul id="tech">
-          <li><img src="img/tech/scala.png" /></li>
-          <li><img src="img/tech/haskell.png" /></li>
-          <li><img src="img/tech/postgresql.png" /></li>
-          <li><img src="img/tech/elasticsearch.png" /></li>
-          <li><img src="img/tech/react.png" /></li>
-          <li><img src="img/tech/akka.png" /></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="dark-bg text-center section-padding contact-wrap" id="contact">
-  <a href="#top" class="up-btn"><i class="fa fa-chevron-up"></i></a>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <h1 class="arrow">Where can you find Vectos?</h1>
-      </div>
-    </div>
-    <!-- <div class="row contact-details">
-      <div class="col-md-4">
-        <div class="light-box box-hover">
-          <h2><i class="fa fa-map-marker"></i><span>Company info</span></h2>
-          <p>KVK: 1234012340<br />BTW: 21341234</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="light-box box-hover">
-          <h2><i class="fa fa-mobile"></i><span>Phone</span></h2>
-          <p>+316 1337 1337</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="light-box box-hover">
-          <h2><i class="fa fa-paper-plane"></i><span>Email</span></h2>
-          <p><a href="mailto:mark@vectos.net">mark@vectos.net</a></p>
-        </div>
-      </div>
-    </div> -->
-    <div class="row">
-      <div class="col-md-12">
-        <ul class="social-buttons">
-          <li><a href="https://twitter.com/VectosSoftware" class="social-btn" target="_blank"><i class="fa fa-twitter"></i></a></li>
-          <li><a href="https://github.com/Vectos" class="social-btn" target="_blank"><i class="fa fa-github"></i></a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
