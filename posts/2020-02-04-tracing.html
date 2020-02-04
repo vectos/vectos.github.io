@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vectos - Tracing with cats-tagless and ZIO</title>
+    <link href="../css/site.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+      </head>
+      <body id="top" class="border-t-8 border-teal-600">
+
+        
+        <div class="sticky top-0 bg-white p-3">
+
+
+            <div class="container mx-auto flex justify-between ">
+            <div>
+                <img class="ml-4" src="../img/logo.png" />
+            </div>
+
+            <div>
+                <ul class="flex flex-row">
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="../index.html">Home</a></li>
+
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="../blog.html">Blog</a></li>
+
+                    <li><a class="inline-block m-3 p-2 rounded hover:bg-gray-200 text-gray-700 font-semibold" href="mailto:mark@vectos.net">Contact</a></li>
+
+                </ul>
+            </div>
+            </div>
+
+        </div>
+
+        <div>
+        <div class="container mx-auto">
+
+<section class="px-4 py-4">
+
+  <div class="col-md-10 col-md-offset-1">
+    <p><span class="text-xl font-extrabold uppercase tracking-wider text-teal-600">Tracing with cats-tagless and ZIO</span> <span class="text-xs text-gray-600">February  4, 2020</span></span></p>
+
+    <div class="blog-post"><p>Tracing can be a good tool to gain in-depth insights in problems you might have in your application. Why does this call take so long? What caused this specific error? Where in my distributed system did the process stop? Tracing be a tool to find out some of these causes.</p>
+<p>I used a specific set of tools to gain these insights. To be more specific:</p>
+<ul>
+<li>OpenTracing which provides a tracing implentation in Java</li>
+<li>ZIO for running effects and propagate to the right <code>Span</code></li>
+<li>cats-tagless for transforming tagless final interfaces to provide instrumented versions</li>
+</ul>
+<p>How does a trace look like ? The Elastic stack offers in Kibana an APM view which looks like this</p>
+<div class="figure">
+<img src="../img/tracing/trace.png" alt="Example of a trace" />
+<p class="caption">Example of a trace</p>
+</div>
+<h2 id="opentracing">OpenTracing</h2>
+<blockquote>
+<p>OpenTracing is comprised of an API specification, frameworks and libraries that have implemented the specification, and documentation for the project. OpenTracing allows developers to add instrumentation to their application code using APIs that do not lock them into any one particular product, programming language or vendor.</p>
+</blockquote>
+<p>The most important concept of OpenTracing is a <code>Span</code>. A <code>Span</code> represent a unit of work, you can attach tags or logs to a spawn and it has a start and end time. You can nest <code>Span</code> inside eachother, such that you can see what’s going on.</p>
+<h2 id="zio">ZIO</h2>
+<p>ZIO is library for modelling (a)synchronous effects inside your application. Typically a tracing application relies on <code>ThreadLocal</code> of Java to keep the current <code>Span</code>. However in ZIO you don’t have that and you can use a <code>FiberRef</code> which allows you to store a local <code>Span</code>.</p>
+<p>A very simple implementation could look like this:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">trait</span> Backend {
+  <span class="kw">def</span> <span class="fu">root</span>(operationName: String): UIO[Span]
+  <span class="kw">def</span> <span class="fu">child</span>(operationName: String, parent: Span): UIO[Span]
+  <span class="kw">def</span> <span class="fu">close</span>(span: Span): UIO[Unit]
+}
+
+<span class="kw">object</span> Backend {
+  <span class="kw">def</span> <span class="fu">opentracing</span>(tracer: Tracer): Backend = <span class="kw">new</span> Backend {
+
+    <span class="kw">def</span> <span class="fu">root</span>(operationName: String): UIO[Span] =
+      <span class="fu">UIO</span>(tracer.<span class="fu">buildSpan</span>(operationName).<span class="fu">start</span>())
+
+    <span class="kw">def</span> <span class="fu">child</span>(operationName: String, parent: Span): UIO[Span] =
+      <span class="fu">UIO</span>(tracer.<span class="fu">buildSpan</span>(operationName).<span class="fu">asChildOf</span>(parent).<span class="fu">start</span>())
+
+    <span class="kw">def</span> <span class="fu">close</span>(span: Span): UIO[Unit] = <span class="fu">UIO</span>(span.<span class="fu">finish</span>())
+  }
+}
+
+
+<span class="kw">trait</span> Tracing {
+  <span class="kw">val</span> tracing: Propagator
+}
+
+<span class="kw">object</span> Tracing {
+  <span class="kw">def</span> <span class="fu">apply</span>(propagator: Propagator): Tracing = <span class="kw">new</span> Tracing {
+    <span class="kw">val</span> tracing: Propagator = propagator
+  }
+}
+
+<span class="kw">class</span> <span class="fu">Propagator</span>(backend: Backend, ref: FiberRef[Span]) { self =&gt;
+  <span class="kw">def</span> get: UIO[Span] = ref.<span class="fu">get</span>
+  <span class="kw">def</span> useChild[R, E, A](operationName: String, use: ZIO[R, E, A]): ZIO[R, E, A] =
+    ZIO.<span class="fu">bracket</span>(get.<span class="fu">flatMap</span>(backend.<span class="fu">child</span>(operationName, _)))(backend.<span class="fu">close</span>) { span =&gt;
+      ref.<span class="fu">locally</span>(span)(use).<span class="fu">provide</span>(<span class="fu">Tracing</span>(self)))
+    }
+}
+
+<span class="kw">object</span> Propagator {
+  <span class="kw">def</span> <span class="fu">make</span>(backend: Backend, initial: Span): UIO[Propagator] =
+    FiberRef.<span class="fu">make</span>(initial).<span class="fu">map</span>(<span class="kw">new</span> <span class="fu">Propagator</span>(backend, _))
+}</code></pre></div>
+<p>The most important method here is the <code>useChild</code> method on <code>Propagator</code>. It uses <code>bracket</code> to run an computation. The allocate will start a new <code>Span</code> and after running the computation it will finish the current <code>Span</code>.</p>
+<p>On every HTTP we receive we create a <code>Propagator</code> like this. I’ve used http4s:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">trace</span>(name: String)(operation: Propagator =&gt; Task[Response[Task]]): Task[Response[Task]] =
+    <span class="kw">for</span> {
+      tracer     &lt;- <span class="fu">UIO</span>(OpenTracing.<span class="fu">tracer</span>)
+      rootSpan   &lt;- <span class="fu">UIO</span>(tracer.<span class="fu">buildSpan</span>(name).<span class="fu">start</span>())
+      propagator &lt;- Propagator.<span class="fu">make</span>(Backend.<span class="fu">opentracing</span>(tracer), rootSpan)
+      resp       &lt;- <span class="fu">operation</span>(propagator).<span class="fu">ensuring</span>(<span class="fu">UIO</span>(rootSpan.<span class="fu">finish</span>()))
+    } <span class="kw">yield</span> resp</code></pre></div>
+<p>In my backend I don’t use Tapir or any endpoints library, but if you do you can generate the name of each transaction by generating an endpoint name.</p>
+<p>An example of running a service method which is bound to an http4s endpoint looks like this.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> unsecured: HttpRoutes[Task] = HttpRoutes.<span class="fu">of</span> {
+    <span class="kw">case</span> GET -&gt; Root :? <span class="fu">CityMatcher</span>(city) +&amp; <span class="fu">PostalCodeMatcher</span>(postalCode) =&gt;
+      <span class="fu">trace</span>(<span class="st">&quot;GET /geo&quot;</span>) { prop =&gt;
+        GeoService.<span class="fu">lookup</span>(postalCode, city).<span class="fu">provide</span>(env.<span class="fu">withTracing</span>(prop)).<span class="fu">flatMap</span>(<span class="fu">Ok</span>(_))
+      }
+  }</code></pre></div>
+<p>To actually trace something in our service methods we need to have access to the <code>Propagator</code>. The <code>Tracing</code> provides that dependency. So I’ve defined a <em>convenient</em> alias for this:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">type</span> Traced[+A] = RIO[Tracing, A]</code></pre></div>
+<p>We eliminate the need of the dependencies by calling the <code>provide</code> method of <code>ZIO</code>. The dependencies are defined with a cake pattern. The signature of the <code>GeoService.lookup</code> method looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">lookup</span>(postalCode: Option[String], city: Option[String]): RIO[AddressClient.<span class="fu">Component</span>[Traced] <span class="kw">with</span> Tracing, Location]</code></pre></div>
+<p>For example if you would require database access, you would include <code>Postgres</code>. As you can see the client for talking to an address API is included as well. Actually my <code>Postgres</code> trait extends <code>Tracing</code>. All the calls to the repositories are of <code>Traced</code>. The <code>env</code> instance here is actually a case class which implements all the dependencies defined in the application.</p>
+<p>The default <code>Tracing</code> implementation uses a <code>NoopBackend</code> which is overriden by the <code>withTracing</code> (which is just a simple case class copy).</p>
+<p>So what does cats-tagless has to do with this?</p>
+<h2 id="cats-tagless">cats-tagless</h2>
+<p>cats-tagless provides powerful macros to work with tagless final algebras.</p>
+<h3 id="why">Why?</h3>
+<p>Why would you bother using tagless final when you have ZIO ?</p>
+<p>I like to use tagless final algebras for the side-effectful components of my systems because it allows you to write down abstractly a effectful method, without getting to specific on the effect type of the method.</p>
+<p>I always implemenent the algebra with the least powerful abstraction, such that it stays flexible to swap any effect you would like. This means using <code>MonadError</code> or <code>Applicative</code> as effect constraint.</p>
+<p>Using the least powerful abstraction makes your program less concerned about other stuff. It will only be able to <code>flatMap</code> and throw an error. The power ZIO provides is not used yet.</p>
+<p>Delaying the use of ZIO allows us to write laws of our algebras and more importantly deal with other concerns at a higher level. These concerns are:</p>
+<ul>
+<li>Circuit breaking</li>
+<li>Tracing</li>
+<li>Metrics</li>
+<li>Logging</li>
+</ul>
+<p>I explain how to apply tracing in this blog, but you could very well use this approach for logging or metrics as well.</p>
+<h3 id="tracing-connectionio">Tracing ConnectionIO</h3>
+<p>For example, all my repositories (which are tagless final algebras) are implemented in terms of <code>ConnectionIO</code> from Doobie. Why?</p>
+<ol style="list-style-type: decimal">
+<li>You can compose <code>ConnectionIO</code> to create transactions</li>
+<li>You can lawfully test the repositories by running multiple <code>ConnectionIO</code> statements, get the result and rollback the transaction to not even affect your database.</li>
+<li>With cats-tagless you can transform the complete tagless final algebra by using <code>FunctorK</code> to a ZIO <code>Task</code> or <code>Traced</code> which we use.</li>
+</ol>
+<p>The repositories are transformed in the following steps</p>
+<div class="figure">
+<img src="../img/tracing/effect_transform.png" alt="Natural transformations used to transform an algebra" />
+<p class="caption">Natural transformations used to transform an algebra</p>
+</div>
+<p>Now every method call to a Repository includes the name of the algebra and the method name. I’ve used a specialized <code>Transactor</code> which includes the SQL statements and also traces how long a query takes.</p>
+<p>How does that translate to code?</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">@autoFunctorK
+@autoInstrument
+<span class="kw">trait</span> Locks[F[_]] {
+  <span class="kw">def</span> <span class="fu">acquire</span>(host: String, service: String): F[Int]
+}</code></pre></div>
+<p>The code which explains the steps to transform</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Repository implementation in terms of ConnectionIO</span>
+<span class="kw">val</span> doobie: Locks[ConnectionIO] = ???
+
+<span class="co">// The natural transformation which transforms ConnectionIO to Traced</span>
+<span class="kw">val</span> xa: ConnectionIO ~&gt; Traced = TracedTransactor.<span class="fu">trans</span>
+
+<span class="co">// Transform the ConnectionIO repository to a Traced implementation</span>
+<span class="kw">val</span> traced: Locks[Traced] = doobie.<span class="fu">mapK</span>(xa)
+
+<span class="co">// The natural transformation to include a `Span` and operationName</span>
+<span class="kw">val</span> instrumentToTraced: (Instrumentation[Traced, *] ~&gt; Traced) =
+	<span class="kw">new</span> (Instrumentation[Traced, *] ~&gt; Traced) {
+		<span class="kw">def</span> apply[A](fa: Instrumentation[Traced, A]): Traced[A] =
+		  ZIO.<span class="fu">accessM</span>(_.<span class="fu">tracing</span>.<span class="fu">useChild</span>(show<span class="st">&quot;${fa.algebraName}.${fa.methodName}&quot;</span>, fa.<span class="fu">value</span>))
+	}
+
+<span class="co">// The instrumented version by using the Instrument macro and apply the instrumentToTraced</span>
+<span class="kw">val</span> instrumented: Locks[Traced] = traced.<span class="fu">instrument</span>.<span class="fu">mapK</span>(instrumentToTraced)</code></pre></div>
+<h2 id="tracing-http">Tracing HTTP</h2>
+<p>I also use tagless final for interacting with external API’s such as Keycloak. In Scala I use keycloak4s, which offers a extensive API built upon sttp. The nice thing about sttp is that you can plugin your own backends. I build a custom backend which works with the <code>Traced</code> effect such that HTTP calls can be traced accross multiple services.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">class</span> <span class="fu">TracingSttp</span>(other: SttpBackend[Traced, Nothing]) <span class="kw">extends</span> SttpBackend[Traced, Nothing] {
+
+  <span class="kw">def</span> send[T](request: Request[T, Nothing]): Traced[Response[T]] = {
+    <span class="kw">def</span> action = {
+
+      <span class="kw">def</span> prepareTags: Traced[Unit] =
+        <span class="fu">tag</span>(
+          <span class="st">&quot;span.kind&quot;</span>   -&gt; <span class="st">&quot;client&quot;</span>,
+          <span class="st">&quot;http.method&quot;</span> -&gt; request.<span class="fu">method</span>.<span class="fu">m</span>,
+          <span class="st">&quot;http.url&quot;</span>    -&gt; request.<span class="fu">uri</span>.<span class="fu">toString</span>()
+        )
+
+      <span class="kw">def</span> extractHttpHeadersFromSpanContext: Traced[Map[String, String]] =
+        ZIO.<span class="fu">accessM</span>(_.<span class="fu">tracing</span>.<span class="fu">httpHeaders</span>)
+
+      <span class="kw">for</span> {
+        _       &lt;- prepareTags
+        headers &lt;- extractHttpHeadersFromSpanContext
+        resp    &lt;- other.<span class="fu">send</span>(request.<span class="fu">headers</span>(headers))
+        _       &lt;- <span class="fu">tag</span>(<span class="st">&quot;http.status_code&quot;</span> -&gt; resp.<span class="fu">code</span>)
+      } <span class="kw">yield</span> resp
+    }
+
+    action.<span class="fu">instrumented</span>(show<span class="st">&quot;${request.method.m} ${request.uri.path.mkString(&quot;</span>/<span class="st">&quot;)}&quot;</span>)
+  }
+
+  <span class="kw">def</span> <span class="fu">close</span>(): Unit = other.<span class="fu">close</span>()
+
+  <span class="kw">def</span> responseMonad: MonadError[Traced] = implicitly[MonadError[Traced]]
+
+}</code></pre></div>
+<p>You can continue your trace accross asynchronous boundaries by encoding the trace id in the HTTP headers and decode it when you process the request on the other end. This also works with Kafka, you could add the tracing state inside a header of Kafka envelope. There are more integrations, this will also work for gRPC for example, checkout the opentracing-contrib.</p>
+<h2 id="closing-words">Closing words</h2>
+<p>Tracing is a nice tool to do root cause analysis and find bottlenecks. OpenTracing, a standard implemented in multiple languages along with ZIO’s <code>FiberRef</code> and cats-tagless can be used to build a non-intrusive way of adding tracing to your application.</p>
+<p>Credits to Tamer Abdulradi for his work on <a href="https://github.com/tabdulradi/zio-instrumentation">zio-instrumentation</a> which has been a huge inspiration.</p></div>
+
+  </div>
+
+</section>
+
+<section>
+  <div class="mb-5">
+    <div class="mx-5 my-5">
+        
+
+        <div class="flex items-center">
+          <img src="../img/mark.jpg" class="rounded-full" alt="Mark de Jong" />
+          <div class="ml-4">
+            <h2 class="font-semibold text-gray-700">Mark de Jong</h2>
+            <p class="text-xs text-gray-600">Software consultant</p>
+
+            <ul class="mt-2 social-buttons">
+                <li><a href="mailto:mark@vectos.net" class="social-btn"><i class="fa fa-envelope"></i></a></li>
+                <li><a target="_blank" href="https://www.linkedin.com/in/mark-de-jong-a808b7167" class="social-btn"><i class="fa fa-linkedin"></i></a></li>
+                <li><a target="_blank" href="https://twitter.com/mark_dj" class="social-btn"><i class="fa fa-twitter"></i></a></li>
+                <li><a target="_blank" href="https://github.com/Fristi" class="social-btn"><i class="fa fa-github"></i></a></li>
+                </ul>
+          </div>
+        </div>
+
+       
+    </div>
+  </div>
+
+
+</section>
+</div>
+        </div>
+
+        <!-- <div id="footer">
+<section class="section-padding" id="technologies">
+  <div class="container text-center">
+    <div class="row">
+      <h1 class="arrow">Technologies</h1>
+      <ul id="tech">
+          <li><img src="/img/tech/scala.png" /></li>
+          <li><img src="/img/tech/haskell.png" /></li>
+          <li><img src="/img/tech/postgresql.png" /></li>
+          <li><img src="/img/tech/elasticsearch.png" /></li>
+          <li><img src="/img/tech/react.png" /></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="dark-bg text-center section-padding contact-wrap" id="contact">
+  <a href="#top" class="up-btn"><i class="fa fa-chevron-up"></i></a>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="arrow">Where can you find Vectos?</h1>
+      </div>
+    </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <ul class="social-buttons">
+          <li><a href="https://twitter.com/VectosSoftware" class="social-btn" target="_blank"><i class="fa fa-twitter"></i></a></li>
+          <li><a href="https://github.com/Vectos" class="social-btn" target="_blank"><i class="fa fa-github"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+        </div> -->
+
+      </body>
+    </html>
